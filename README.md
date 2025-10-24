@@ -1,5 +1,5 @@
 # savecanto_map
-🌟 note for devs trying to setup their local env --> a lot of this setup readme comes from the next.js + GAS setup guides themselves but you might have to install external dependencies or use sudo install for GAS. if you get stuck, try googling or chatting ur way through, but if that doesn't work feel free to email or message me! my contact info is listed on the notion :) - anusha <3
+🌟 note for devs trying to setup their local env --> a lot of this setup readme comes from the next.js + GAS docs themselves but you might have to install external dependencies or use 'sudo' for GAS installs. if you get stuck, try googling or debugging ur way through, but if that doesn't work feel free to email or message me! my contact info is listed on the notion :) - anusha <3
 # Next.js Frontend
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
