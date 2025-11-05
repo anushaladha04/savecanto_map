@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify
 from .logic import check_site
 
+# to define api endpoints for verification
+
 bp = Blueprint("verify", __name__)
 
 @bp.post("/verify")

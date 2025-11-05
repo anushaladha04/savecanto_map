@@ -2,6 +2,8 @@ from flask import Flask
 from flask_cors import CORS
 from verification.routes import bp as verify_bp
 
+# initializes Flask app
+
 app = Flask(__name__)
 CORS(app)  # allow local dev from Next.js later
 

@@ -1,5 +1,7 @@
 import requests
 
+# this is for the algorithm that checks if a site is active!
+
 def check_site(url: str) -> str:
     if not url or not url.startswith(("http://", "https://")):
         return "needs_review"
@@ -13,3 +15,4 @@ def check_site(url: str) -> str:
             return "needs_review"
     except Exception:
         return "needs_review"
+
