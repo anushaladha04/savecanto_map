@@ -28,25 +28,12 @@ const CantoTable = () => {
   const DEFAULT_VALUE = '-----';
 
   const columns = [
-    { title: 'Name', dataIndex: 'Name', key: 'Name' },
-    { title: 'Audience', dataIndex: 'Audience', key: 'Audience' },
-    { title: 'City', dataIndex: 'City', key: 'City' },
-    { title: 'State / Province', dataIndex: 'State/Province', key: 'State/Province' },
-    { title: 'Country', dataIndex: 'Country', key: 'Country' },
-    { title: 'Level of Cantonese', dataIndex: 'Level of Cantonese', key: 'Level of Cantonese' },
-    { title: 'Address', dataIndex: 'Address', key: 'Address' },
-    {
-        title: 'Latitude',
-        dataIndex: 'Latitude',
-        key: 'Latitude',
-        render: (val: string) => (val ? parseFloat(val).toFixed(4) : '–'),
-    },
-    {
-        title: 'Longitude',
-        dataIndex: 'Longitude',
-        key: 'Longitude',
-        render: (val: string) => (val ? parseFloat(val).toFixed(4) : '–'),
-    },
+    { title: 'Name', dataIndex: 'Name', key: 'Name', render: (val: string) => val || DEFAULT_VALUE },
+    { title: 'Audience', dataIndex: 'Audience', key: 'Audience', render: (val: string) => val || DEFAULT_VALUE },
+    { title: 'City', dataIndex: 'City', key: 'City', render: (val: string) => val || DEFAULT_VALUE },
+    { title: 'State / Province', dataIndex: 'State/Province', key: 'State/Province', render: (val: string) => val || DEFAULT_VALUE },
+    { title: 'Country', dataIndex: 'Country', key: 'Country', render: (val: string) => val || DEFAULT_VALUE },
+    { title: 'Address', dataIndex: 'Address', key: 'Address', render: (val: string) => val || DEFAULT_VALUE },
     {
         title: 'Website',
         dataIndex: 'Website',
@@ -57,11 +44,9 @@ const CantoTable = () => {
             {url}
             </a>
         ) : (
-            '–'
+            DEFAULT_VALUE
         ),
-    },
-    { title: 'Website Verification', dataIndex: 'Website Verification', key: 'Website Verification' },
-    { title: 'Approval Status', dataIndex: 'Approval Status', key: 'Approval Status' },
+    }
   ];
 
   useEffect(() => {
