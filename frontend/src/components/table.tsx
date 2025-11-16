@@ -1,5 +1,12 @@
 'use client';
-import { Table, Spin, Alert, Space, Flex } from 'antd';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { useEffect, useState } from 'react';
 import Papa from 'papaparse';
 import SearchBar from './searchBar';
@@ -30,28 +37,6 @@ const CantoTable = () => {
 
   const DEFAULT_VALUE = '-----';
 
-  const columns = [
-    { title: 'Name', dataIndex: 'Name', key: 'Name', render: (val: string) => val || DEFAULT_VALUE },
-    { title: 'Audience', dataIndex: 'Audience', key: 'Audience', render: (val: string) => val || DEFAULT_VALUE },
-    { title: 'City', dataIndex: 'City', key: 'City', render: (val: string) => val || DEFAULT_VALUE },
-    { title: 'State / Province', dataIndex: 'State/Province', key: 'State/Province', render: (val: string) => val || DEFAULT_VALUE },
-    { title: 'Country', dataIndex: 'Country', key: 'Country', render: (val: string) => val || DEFAULT_VALUE },
-    { title: 'Address', dataIndex: 'Address', key: 'Address', render: (val: string) => val || DEFAULT_VALUE },
-    {
-        title: 'Website',
-        dataIndex: 'Website',
-        key: 'Website',
-        render: (url: string) =>
-        url ? (
-            <a href={url} target="_blank" rel="noopener noreferrer">
-            {url}
-            </a>
-        ) : (
-            DEFAULT_VALUE
-        ),
-    }
-  ];
-
   useEffect(() => {
     fetch(sheetURL)
       .then(res => {
@@ -64,7 +49,6 @@ const CantoTable = () => {
           skipEmptyLines: true,
         });
 
-        // Ensure all rows are objects and add unique key
         const rowsWithKey: (CsvRow & { key: number })[] = parsed.data
           .filter(row => typeof row === 'object' && row !== null)
           .map((row, index) => ({ key: index, ...row }));
@@ -79,28 +63,54 @@ const CantoTable = () => {
     row.Name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (loading) return <Spin tip="Loading…" />;
-  if (error) return <Alert message="Error loading CSV" description={error} type="error" />;
-
   return (
-    <Space
-      direction='vertical'
-    >
-      <Flex
-        justify='flex-end'
-        style={{ marginBottom: 8 }}
-      >
-        <SearchBar 
-          value={searchTerm}
-          onChange={setSearchTerm}
-        />
-      </Flex>
-      <Table 
-        dataSource={filteredData}
-        columns={columns}
-        pagination={{ pageSize: 10 }}
-      />
-    </Space>
+    <div className="space-y-4">
+      {/* Search Bar */}
+      <div className="flex justify-end mb-2">
+        <SearchBar value={searchTerm} onChange={setSearchTerm} />
+      </div>
+
+      {/* Table */}
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Name</TableHead>
+            <TableHead>Audience</TableHead>
+            <TableHead>City</TableHead>
+            <TableHead>State / Province</TableHead>
+            <TableHead>Country</TableHead>
+            <TableHead>Address</TableHead>
+            <TableHead>Website</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {filteredData.map(row => (
+            <TableRow key={row.key}>
+              <TableCell>{row.Name || DEFAULT_VALUE}</TableCell>
+              <TableCell>{row.Audience || DEFAULT_VALUE}</TableCell>
+              <TableCell>{row.City || DEFAULT_VALUE}</TableCell>
+              <TableCell>{row['State/Province'] || DEFAULT_VALUE}</TableCell>
+              <TableCell>{row.Country || DEFAULT_VALUE}</TableCell>
+              <TableCell>{row.Address || DEFAULT_VALUE}</TableCell>
+              <TableCell>
+                {row.Website ? (
+                  <a
+                    href={row.Website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline"
+                  >
+                    {row.Website}
+                  </a>
+                ) : (
+                  DEFAULT_VALUE
+                )}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 };
 

@@ -1,19 +1,19 @@
 'use client';
-import { Input, Space } from 'antd';
+import { Input } from '@/components/ui/input';
 
 interface SearchBarProps {
-    value: string;
-    onChange: (value: string) => void;
+  value: string;
+  onChange: (value: string) => void;
 }
 
 const SearchBar = ({ value, onChange }: SearchBarProps) => {
   return (
     <Input
+      type="text"
       placeholder="Search"
       value={value}
       onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
-      allowClear
-      style={{ width: '300px' }}
+      className="w-72"
     />
   );
 };
