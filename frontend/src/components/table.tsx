@@ -65,22 +65,17 @@ const CantoTable = () => {
 
   return (
     <div className="space-y-4">
-      {/* Search Bar */}
       <div className="flex justify-end mb-2">
         <SearchBar value={searchTerm} onChange={setSearchTerm} />
       </div>
-
-      {/* Table */}
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Audience</TableHead>
-            <TableHead>City</TableHead>
-            <TableHead>State / Province</TableHead>
-            <TableHead>Country</TableHead>
-            <TableHead>Address</TableHead>
-            <TableHead>Website</TableHead>
+            {['Name', 'Audience', 'City', 'State / Province', 'Country', 'Address', 'Website'].map(
+              header => (
+                <TableHead key={header}>{header}</TableHead>
+              )
+            )}
           </TableRow>
         </TableHeader>
         <TableBody>
