@@ -1,7 +1,8 @@
 'use client';
-import { Table, Spin, Alert } from 'antd';
+import { Table, Spin, Alert, Space, Flex } from 'antd';
 import { useEffect, useState } from 'react';
 import Papa from 'papaparse';
+import SearchBar from './searchBar';
 
 interface CsvRow {
   Name: string;
@@ -25,6 +26,8 @@ const CantoTable = () => {
   const [data, setData] = useState<(CsvRow & { key: number })[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+    const [searchTerm, setSearchTerm] = useState('');    
+
   const DEFAULT_VALUE = '-----';
 
   const columns = [
@@ -72,10 +75,33 @@ const CantoTable = () => {
       .finally(() => setLoading(false));
   }, []);
 
+  const filteredData = data.filter(row =>
+    row.Name?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   if (loading) return <Spin tip="Loading…" />;
   if (error) return <Alert message="Error loading CSV" description={error} type="error" />;
 
-  return <Table dataSource={data} columns={columns} pagination={{ pageSize: 10 }} />;
+  return (
+    <Space
+      direction='vertical'
+    >
+      <Flex
+        justify='flex-end'
+        style={{ marginBottom: 8 }}
+      >
+        <SearchBar 
+          value={searchTerm}
+          onChange={setSearchTerm}
+        />
+      </Flex>
+      <Table 
+        dataSource={filteredData}
+        columns={columns}
+        pagination={{ pageSize: 10 }}
+      />
+    </Space>
+  );
 };
 
 export default CantoTable;
