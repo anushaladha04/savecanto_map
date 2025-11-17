@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react';
 import Papa from 'papaparse';
 import SearchBar from './searchBar';
 import TableFilters from './filterbar';
+import TablePagination from './pagination';
 
 interface CsvRow {
   Name: string;
@@ -38,6 +39,8 @@ const CantoTable = () => {
   const [provinceFilter, setProvinceFilter] = useState('all');
   const [cityFilter, setCityFilter] = useState('all');
   const [countryFilter, setCountryFilter] = useState('all');
+  const [page, setPage] = useState(1);
+  const rowsPerPage = 20;
 
   const DEFAULT_VALUE = '-----';
 
@@ -78,6 +81,9 @@ const CantoTable = () => {
     return matchesSearch && matchesAudience && matchesProvince && matchesCity && matchesCountry;
   });
 
+  const startIndex = (page - 1) * rowsPerPage;
+  const paginatedData = filteredData.slice(startIndex, startIndex + rowsPerPage);
+
   return (
     <div className="space-y-4">
       <div className="flex items-end justify-between">
@@ -94,29 +100,34 @@ const CantoTable = () => {
           uniqueProvinces={uniqueProvinces}
           uniqueCities={uniqueCities}
           uniqueCountries={uniqueCountries}
-          totalCount={data.length}
-          filteredCount={filteredData.length}
         />
         <SearchBar value={searchTerm} onChange={setSearchTerm} />
       </div>
 
+      {/* TABLE */}
       <Table className="table-fixed w-full">
         <TableHeader>
           <TableRow>
-            {['Name', 'Audience', 'City', 'State / Province', 'Country', 'Address', 'Website'].map(
-              header => (
-                <TableHead className="w-40 whitespace-normal break-words" key={header}>{header}</TableHead>
-              )
-            )}
+            {['Name', 'Audience', 'City', 'State / Province', 'Country', 'Address', 'Website'].map(header => (
+              <TableHead
+                className="w-40 whitespace-normal break-words"
+                key={header}
+              >
+                {header}
+              </TableHead>
+            ))}
           </TableRow>
         </TableHeader>
+
         <TableBody>
-          {filteredData.map(row => (
+          {paginatedData.map(row => (
             <TableRow key={row.key}>
               <TableCell className="w-40 whitespace-normal break-words">{row.Name || DEFAULT_VALUE}</TableCell>
               <TableCell className="w-40 whitespace-normal break-words">{row.Audience || DEFAULT_VALUE}</TableCell>
               <TableCell className="w-40 whitespace-normal break-words">{row.City || DEFAULT_VALUE}</TableCell>
-              <TableCell className="w-40 whitespace-normal break-words">{row['State/Province'] || DEFAULT_VALUE}</TableCell>
+              <TableCell className="w-40 whitespace-normal break-words">
+                {row['State/Province'] || DEFAULT_VALUE}
+              </TableCell>
               <TableCell className="w-40 whitespace-normal break-words">{row.Country || DEFAULT_VALUE}</TableCell>
               <TableCell className="w-40 whitespace-normal break-words">{row.Address || DEFAULT_VALUE}</TableCell>
               <TableCell className="w-40 whitespace-normal break-words">
@@ -137,6 +148,15 @@ const CantoTable = () => {
           ))}
         </TableBody>
       </Table>
+      
+      {/* Pagination */}
+      <div>
+        <TablePagination
+          currentPage={page}
+          totalPages={Math.ceil(filteredData.length / rowsPerPage)}
+          onPageChange={setPage}
+        />
+      </div>
     </div>
   );
 };

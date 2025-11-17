@@ -20,8 +20,6 @@ interface cantoFilterProps {
   uniqueProvinces: string[];
   uniqueCities: string[];
   uniqueCountries: string[];
-  totalCount: number;
-  filteredCount: number;
 }
 
 const cantoFilters = ({
@@ -37,8 +35,6 @@ const cantoFilters = ({
   uniqueProvinces,
   uniqueCities,
   uniqueCountries,
-  totalCount,
-  filteredCount,
 }: cantoFilterProps) => {
     const filters = [
     { label: "Age Group", value: audienceFilter, setValue: setAudienceFilter, options: uniqueAudiences, placeholder: "Select an Age Group" },
