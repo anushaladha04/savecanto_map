@@ -100,12 +100,12 @@ const CantoTable = () => {
         <SearchBar value={searchTerm} onChange={setSearchTerm} />
       </div>
 
-      <Table>
+      <Table className="table-fixed w-full">
         <TableHeader>
           <TableRow>
             {['Name', 'Audience', 'City', 'State / Province', 'Country', 'Address', 'Website'].map(
               header => (
-                <TableHead key={header}>{header}</TableHead>
+                <TableHead className="w-40 whitespace-normal break-words" key={header}>{header}</TableHead>
               )
             )}
           </TableRow>
@@ -113,13 +113,13 @@ const CantoTable = () => {
         <TableBody>
           {filteredData.map(row => (
             <TableRow key={row.key}>
-              <TableCell>{row.Name || DEFAULT_VALUE}</TableCell>
-              <TableCell>{row.Audience || DEFAULT_VALUE}</TableCell>
-              <TableCell>{row.City || DEFAULT_VALUE}</TableCell>
-              <TableCell>{row['State/Province'] || DEFAULT_VALUE}</TableCell>
-              <TableCell>{row.Country || DEFAULT_VALUE}</TableCell>
-              <TableCell>{row.Address || DEFAULT_VALUE}</TableCell>
-              <TableCell>
+              <TableCell className="w-40 whitespace-normal break-words">{row.Name || DEFAULT_VALUE}</TableCell>
+              <TableCell className="w-40 whitespace-normal break-words">{row.Audience || DEFAULT_VALUE}</TableCell>
+              <TableCell className="w-40 whitespace-normal break-words">{row.City || DEFAULT_VALUE}</TableCell>
+              <TableCell className="w-40 whitespace-normal break-words">{row['State/Province'] || DEFAULT_VALUE}</TableCell>
+              <TableCell className="w-40 whitespace-normal break-words">{row.Country || DEFAULT_VALUE}</TableCell>
+              <TableCell className="w-40 whitespace-normal break-words">{row.Address || DEFAULT_VALUE}</TableCell>
+              <TableCell className="w-40 whitespace-normal break-words">
                 {row.Website ? (
                   <a
                     href={row.Website}
