@@ -3,7 +3,8 @@ function setConfig() {
   props.setProperties({
     SHEET_ID_OLD: '1XpM0wlkbnpaSAVLuwXZfv_BHAVcZ0AOgr_xudCLt-ug', 
     SHEET_ID_NEW: '1t_dFtkP5DI4C-B9SF7_b9bTED6bvdRS4EHDGdv93baI', 
-    TAB_OLD: 'Full Dataset',
+    TAB_OLD1: 'Full Dataset',
+    TAB_OLD2: 'NewPrograms',
     TAB_NEW: 'Approval',
     FLASK_BASE_URL: 'http://localhost:5001/api' 
   }, true);
