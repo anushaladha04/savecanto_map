@@ -4,58 +4,47 @@
 
 'use client';
 
-import { ComposableMap, Geographies, Geography, ZoomableGroup } from 'react-simple-maps';
-import { useState } from 'react';
-
-const geoUrl = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
+import { useMemo } from 'react';
+import maplibregl from 'maplibre-gl';
+import Map, { MapRef } from 'react-map-gl/maplibre';
+import 'maplibre-gl/dist/maplibre-gl.css';
 
 interface BaseMapProps {
+  mapRef?: React.RefObject<MapRef>;
   children?: React.ReactNode;
+  initialViewState?: {
+    longitude: number;
+    latitude: number;
+    zoom: number;
+  };
 }
 
-export default function BaseMap({ children }: BaseMapProps) {
-  const [position, setPosition] = useState<{ coordinates: [number, number]; zoom: number }>({ 
-    coordinates: [0, 0], 
-    zoom: 1 
-  });
+const VOYAGER_STYLE_URL =
+  'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json';
 
-  const handleMoveEnd = (position: { coordinates: [number, number]; zoom: number }) => {
-    setPosition(position);
-  };
-
+export default function BaseMap({
+  mapRef,
+  children,
+  initialViewState = {
+    longitude: 0,
+    latitude: 20,
+    zoom: 1.5,
+  },
+}: BaseMapProps) {
+  const mapStyle = useMemo(() => VOYAGER_STYLE_URL, []);
   return (
-    <ComposableMap
-      projectionConfig={{
-        scale: 147,
-        center: [0, 20]
-      }}
+    <Map
+      ref={mapRef}
+      mapLib={maplibregl}
+      mapStyle={mapStyle}
+      initialViewState={initialViewState}
       style={{ width: '100%', height: '100%' }}
+      cooperativeGestures
+      dragRotate={false}
+      touchZoomRotate={true}
+      attributionControl={{ compact: true }}
     >
-      <ZoomableGroup
-        zoom={position.zoom}
-        center={position.coordinates}
-        onMoveEnd={handleMoveEnd}
-      >
-        <Geographies geography={geoUrl}>
-          {({ geographies }) =>
-            geographies.map((geo) => (
-              <Geography
-                key={geo.rsmKey}
-                geography={geo}
-                fill="#e5e7eb"
-                stroke="#d1d5db"
-                strokeWidth={0.5}
-                style={{
-                  default: { outline: 'none' },
-                  hover: { outline: 'none', fill: '#e5e7eb' },
-                  pressed: { outline: 'none', fill: '#e5e7eb' }
-                }}
-              />
-            ))
-          }
-        </Geographies>
-        {children}
-      </ZoomableGroup>
-    </ComposableMap>
+      {children}
+    </Map>
   );
 }
