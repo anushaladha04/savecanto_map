@@ -43,6 +43,7 @@ export default function BaseMap({
       dragRotate={false}
       touchZoomRotate={true}
       attributionControl={{ compact: true }}
+      renderWorldCopies={false}
     >
       {children}
     </Map>
