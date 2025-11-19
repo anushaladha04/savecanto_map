@@ -15,7 +15,6 @@ export default function Home() {
         {/* show side panel UI for visual/debugging — ignoring program selection for now */}
         <SidePanel isOpen={isOpen} onClose={() => setIsOpen(false)} />
       </div>
-      <h2 className="text-2xl font-bold">Table Placeholder</h2>
     </main>
   );
 }
