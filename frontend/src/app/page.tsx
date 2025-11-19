@@ -1,8 +1,11 @@
+import BaseMap from './map/components/BaseMap';
+
 export default function Home() {
   return (
     <main className="min-h-screen grid place-items-center p-10">
-      <h1 className="text-3xl font-bold">SaveCanto Map ✅</h1>
-      <p className="mt-2 text-sm text-gray-500">Next.js + Tailwind is live</p>
+      <h1 className="text-3xl font-bold">World Map of Cantonese Programs</h1>
+      <BaseMap />
+      <h2 className="text-2xl font-bold">Table Placeholder</h2>
     </main>
   );
 }
