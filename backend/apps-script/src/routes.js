@@ -1,6 +1,3 @@
-// test comment for pulling 
-//test comment for pushing
-
 function doGet(e) {
   return ContentService
     .createTextOutput(JSON.stringify({ message: 'Hello from Apps Script!' }))
