@@ -20,13 +20,8 @@ interface CsvRow {
   City: string;
   'State/Province': string;
   Country: string;
-  'Level of Cantonese': string;
   Address: string;
-  Latitude: string;
-  Longitude: string;
   Website: string;
-  'Website Verification': string;
-  'Approval Status': string;
 }
 
 type SortKey = 'Name' | 'Audience' | 'City' | 'State/Province' | 'Country' | 'Address' | 'Website';
@@ -73,10 +68,8 @@ const CantoTable = () => {
   }, []);
 
   // Unique values for filters
-  const uniqueAudiences = Array.from(new Set(data.map(row => row.Audience).filter(Boolean))).sort();
   const uniqueProvinces = Array.from(new Set(data.map(row => row['State/Province']).filter(Boolean))).sort();
   const uniqueCities = Array.from(new Set(data.map(row => row.City).filter(Boolean))).sort();
-  const uniqueCountries = Array.from(new Set(data.map(row => row.Country).filter(Boolean))).sort();
 
   // Apply filters
   const filteredData = data.filter(row => {
@@ -125,7 +118,6 @@ const CantoTable = () => {
           setCityFilter={setCityFilter}
           countryFilter={countryFilter}
           setCountryFilter={setCountryFilter}
-          uniqueAudiences={uniqueAudiences}
           uniqueProvinces={uniqueProvinces}
           uniqueCities={uniqueCities}
         />

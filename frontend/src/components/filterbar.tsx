@@ -20,7 +20,6 @@ interface CantoFilterProps {
   setCityFilter: (value: string) => void;
   countryFilter: string;
   setCountryFilter: (value: string) => void;
-  uniqueAudiences: string[];
   uniqueProvinces: string[];
   uniqueCities: string[];
 }
@@ -36,7 +35,6 @@ const CantoFilters = ({
   setCityFilter,
   countryFilter,
   setCountryFilter,
-  uniqueAudiences,
   uniqueProvinces,
   uniqueCities,
 }: CantoFilterProps) => {
