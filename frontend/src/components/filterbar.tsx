@@ -7,7 +7,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import countries from 'i18n-iso-countries';
-// Register English locale
+import { getCountryName, getCountryFlag } from './utils/countries';
+
 countries.registerLocale(require("i18n-iso-countries/langs/en.json"));
 
 interface CantoFilterProps {
@@ -38,15 +39,6 @@ const CantoFilters = ({
   uniqueCities,
 }: CantoFilterProps) => {
   const AudienceOptions = ["all", "Adults", "Children & Teens", "College / University"];
-
-  // Convert country code to flag emoji
-  const getCountryFlag = (code: string) => {
-    const codePoints = code
-      .toUpperCase()
-      .split('')
-      .map(char => 127397 + char.charCodeAt(0));
-    return String.fromCodePoint(...codePoints);
-  };
 
   const filters = [
     { 
@@ -95,12 +87,12 @@ const CantoFilters = ({
               <SelectItem value="all">{placeholder}</SelectItem>
               {options.map(option => {
                 if (isCountry) {
-                  const countryName = countries.getName(option, "en") || option;
+                  const countryName = getCountryName(option);
                   const flag = getCountryFlag(option);
                   return (
-                    <SelectItem key={option} value={option}>
-                      {countryName}
+                    <SelectItem key={option} value={countryName}>
                       <span className="mr-2">{flag}</span>
+                      {countryName}
                     </SelectItem>
                   );
                 }
