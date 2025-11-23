@@ -7,7 +7,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import countries from 'i18n-iso-countries';
-
 // Register English locale
 countries.registerLocale(require("i18n-iso-countries/langs/en.json"));
 
@@ -40,29 +39,68 @@ const CantoFilters = ({
 }: CantoFilterProps) => {
   const AudienceOptions = ["all", "Adults", "Children & Teens", "College / University"];
 
+  // Convert country code to flag emoji
+  const getCountryFlag = (code: string) => {
+    const codePoints = code
+      .toUpperCase()
+      .split('')
+      .map(char => 127397 + char.charCodeAt(0));
+    return String.fromCodePoint(...codePoints);
+  };
+
   const filters = [
-    { label: "Age Group", value: audienceFilter, setValue: setAudienceFilter, options: AudienceOptions, placeholder: "Select an Audience" },
-    { label: "City", value: cityFilter, setValue: setCityFilter, options: uniqueCities, placeholder: "City" },
-    { label: "Country", value: countryFilter, setValue: setCountryFilter, options: allCountryCodes, placeholder: "Country" },
-    { label: "State/Province", value: provinceFilter, setValue: setProvinceFilter, options: uniqueProvinces, placeholder: "State/Province" },
+    { 
+      label: "Age Group", 
+      value: audienceFilter, 
+      setValue: setAudienceFilter, 
+      options: AudienceOptions, 
+      placeholder: "Select an Audience",
+      isCountry: false
+    },
+    { 
+      label: "Country", 
+      value: countryFilter, 
+      setValue: setCountryFilter, 
+      options: allCountryCodes, 
+      placeholder: "Country",
+      isCountry: true
+    },
+    { 
+      label: "State/Province", 
+      value: provinceFilter, 
+      setValue: setProvinceFilter, 
+      options: uniqueProvinces || [], 
+      placeholder: "State/Province",
+      isCountry: false
+    },
+    { 
+      label: "City", 
+      value: cityFilter, 
+      setValue: setCityFilter, 
+      options: uniqueCities || [], 
+      placeholder: "City",
+      isCountry: false
+    },
   ];
 
   return (
     <div className="flex gap-4">
-      {filters.map(({ label, value, setValue, options, placeholder }) => (
+      {filters.map(({ label, value, setValue, options, placeholder, isCountry }) => (
         <div key={label}>
           <Select value={value} onValueChange={setValue}>
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder={placeholder} />
             </SelectTrigger>
-            <SelectContent className="bg-background">
+            <SelectContent className="bg-background max-h-[300px] overflow-y-auto">
               <SelectItem value="all">{placeholder}</SelectItem>
               {options.map(option => {
-                if (label === "Country") {
-                  const countryName = countries.getName(option, "en", { select: "official" }) || option;
+                if (isCountry) {
+                  const countryName = countries.getName(option, "en") || option;
+                  const flag = getCountryFlag(option);
                   return (
                     <SelectItem key={option} value={option}>
                       {countryName}
+                      <span className="mr-2">{flag}</span>
                     </SelectItem>
                   );
                 }
