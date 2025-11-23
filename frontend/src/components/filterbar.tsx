@@ -1,4 +1,5 @@
 'use client';
+import React from 'react';
 import {
   Select,
   SelectContent,
@@ -6,8 +7,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import countries from 'i18n-iso-countries';
 
-interface cantoFilterProps {
+// Register English locale
+countries.registerLocale(require("i18n-iso-countries/langs/en.json"));
+
+interface CantoFilterProps {
   audienceFilter: string;
   setAudienceFilter: (value: string) => void;
   provinceFilter: string;
@@ -19,10 +24,11 @@ interface cantoFilterProps {
   uniqueAudiences: string[];
   uniqueProvinces: string[];
   uniqueCities: string[];
-  uniqueCountries: string[];
 }
 
-const cantoFilters = ({
+const allCountryCodes = Object.keys(countries.getNames("en")); // all ISO alpha-2 codes
+
+const CantoFilters = ({
   audienceFilter,
   setAudienceFilter,
   provinceFilter,
@@ -34,36 +40,43 @@ const cantoFilters = ({
   uniqueAudiences,
   uniqueProvinces,
   uniqueCities,
-  uniqueCountries,
-}: cantoFilterProps) => {
-    const filters = [
-    { label: "Age Group", value: audienceFilter, setValue: setAudienceFilter, options: uniqueAudiences, placeholder: "Select an Age Group" },
-    { label: "Country", value: countryFilter, setValue: setCountryFilter, options: uniqueCountries, placeholder: "Country" },
+}: CantoFilterProps) => {
+  const AudienceOptions = ["all", "Adults", "Children & Teens", "College / University"];
+
+  const filters = [
+    { label: "Age Group", value: audienceFilter, setValue: setAudienceFilter, options: AudienceOptions, placeholder: "Select an Audience" },
+    { label: "Country", value: countryFilter, setValue: setCountryFilter, options: allCountryCodes, placeholder: "Country" },
     { label: "State/Province", value: provinceFilter, setValue: setProvinceFilter, options: uniqueProvinces, placeholder: "State/Province" },
     { label: "City", value: cityFilter, setValue: setCityFilter, options: uniqueCities, placeholder: "City" },
-    ];
+  ];
 
-    return (
-        <div className="flex gap-4">
-        {filters.map(({ label, value, setValue, options, placeholder }) => (
-            <div key={label}>
-            <Select value={value} onValueChange={setValue}>
-                <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder={placeholder} />
-                </SelectTrigger>
-                <SelectContent>
-                <SelectItem value="all">{placeholder}</SelectItem>
-                {options.map(option => (
+  return (
+    <div className="flex gap-4">
+      {filters.map(({ label, value, setValue, options, placeholder }) => (
+        <div key={label}>
+          <Select value={value} onValueChange={setValue}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder={placeholder} />
+            </SelectTrigger>
+            <SelectContent className="bg-background">
+              <SelectItem value="all">{placeholder}</SelectItem>
+              {options.map(option => {
+                if (label === "Country") {
+                  const countryName = countries.getName(option, "en", { select: "official" }) || option;
+                  return (
                     <SelectItem key={option} value={option}>
-                    {option}
+                      {countryName}
                     </SelectItem>
-                ))}
-                </SelectContent>
-            </Select>
-            </div>
-        ))}
+                  );
+                }
+                return <SelectItem key={option} value={option}>{option}</SelectItem>;
+              })}
+            </SelectContent>
+          </Select>
         </div>
-    );
+      ))}
+    </div>
+  );
 };
 
-export default cantoFilters;
+export default CantoFilters;

@@ -99,7 +99,7 @@ const CantoTable = () => {
           uniqueAudiences={uniqueAudiences}
           uniqueProvinces={uniqueProvinces}
           uniqueCities={uniqueCities}
-          uniqueCountries={uniqueCountries}
+          // uniqueCountries={uniqueCountries}
         />
         <SearchBar value={searchTerm} onChange={setSearchTerm} />
       </div>
