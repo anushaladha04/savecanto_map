@@ -1,5 +1,4 @@
 'use client';
-import React from 'react';
 import {
   Select,
   SelectContent,
@@ -45,9 +44,9 @@ const CantoFilters = ({
 
   const filters = [
     { label: "Age Group", value: audienceFilter, setValue: setAudienceFilter, options: AudienceOptions, placeholder: "Select an Audience" },
+    { label: "City", value: cityFilter, setValue: setCityFilter, options: uniqueCities, placeholder: "City" },
     { label: "Country", value: countryFilter, setValue: setCountryFilter, options: allCountryCodes, placeholder: "Country" },
     { label: "State/Province", value: provinceFilter, setValue: setProvinceFilter, options: uniqueProvinces, placeholder: "State/Province" },
-    { label: "City", value: cityFilter, setValue: setCityFilter, options: uniqueCities, placeholder: "City" },
   ];
 
   return (
