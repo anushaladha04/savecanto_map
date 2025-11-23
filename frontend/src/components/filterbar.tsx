@@ -38,7 +38,7 @@ const CantoFilters = ({
   uniqueProvinces,
   uniqueCities,
 }: CantoFilterProps) => {
-  const AudienceOptions = ["all", "Adults", "Children & Teens", "College / University"];
+  const AudienceOptions = ["Adults", "Children & Teens", "College / University"];
 
   const filters = [
     { 

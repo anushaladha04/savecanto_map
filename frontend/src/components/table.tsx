@@ -25,7 +25,7 @@ interface CsvRow {
 }
 
 type SortKey = 'Name' | 'Audience' | 'City' | 'State/Province' | 'Country' | 'Address' | 'Website';
-type SortOrder = 'asc' | 'desc';
+type SortOrder = 'default' | 'asc' | 'desc';
 
 const CantoTable = () => {
   const sheetURL =
@@ -41,9 +41,8 @@ const CantoTable = () => {
   const [page, setPage] = useState(1);
   const rowsPerPage = 20;
 
-  // Default sorting: Name ascending
-  const [sortKey, setSortKey] = useState<SortKey>('Name');
-  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('default');
+  const [sortKey, setSortKey] = useState<SortKey | null>(null); // null for default
 
   const DEFAULT_VALUE = '-----';
 
@@ -83,26 +82,34 @@ const CantoTable = () => {
   });
 
   // Apply sorting
-  const sortedData = [...filteredData].sort((a, b) => {
-    if (!sortKey) return 0;
-    const valA = (a[sortKey] || '').toString().toLowerCase();
-    const valB = (b[sortKey] || '').toString().toLowerCase();
-    if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
-    if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
-    return 0;
-  });
+  const sortedData = sortKey
+    ? [...filteredData].sort((a, b) => {
+        const valA = (a[sortKey] || '').toString().toLowerCase();
+        const valB = (b[sortKey] || '').toString().toLowerCase();
+        if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
+        if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
+        return 0;
+      })
+    : filteredData; // default: no sorting
 
   const startIndex = (page - 1) * rowsPerPage;
   const paginatedData = sortedData.slice(startIndex, startIndex + rowsPerPage);
 
   const handleSort = (key: SortKey) => {
-    if (sortKey === key) {
-      setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'));
-    } else {
+    if (sortKey !== key) {
+      // New column clicked → start with ascending
       setSortKey(key);
       setSortOrder('asc');
+    } else {
+      // Same column clicked → cycle asc → desc → default
+      if (sortOrder === 'asc') setSortOrder('desc');
+      else if (sortOrder === 'desc') {
+        setSortOrder('default');
+        setSortKey(null); // reset to default order
+      } else setSortOrder('asc');
     }
   };
+
 
   const headers: SortKey[] = ['Name', 'Audience', 'City', 'State/Province', 'Country', 'Address', 'Website'];
 
@@ -125,7 +132,7 @@ const CantoTable = () => {
       </div>
 
       <Table className="table-fixed w-full">
-        <TableHeader>
+        <TableHeader style={{ backgroundColor: '#F5F7FA' }}>
           <TableRow>
             {headers.map(header => {
               const isActive = sortKey === header;
@@ -138,10 +145,11 @@ const CantoTable = () => {
                   <div className="flex items-center space-x-1">
                     <span>{header}</span>
                     {isActive ? (
-                      sortOrder === 'asc' ? <SortAscIcon size={16} /> : <SortDescIcon size={16} />
+                      sortOrder === 'asc' ? <SortAscIcon size={16} /> : sortOrder === 'desc' ? <SortDescIcon size={16} /> : <ArrowUpDown size={16} />
                     ) : (
                       <ArrowUpDown size={16} />
                     )}
+
                   </div>
                 </TableHead>
               );
