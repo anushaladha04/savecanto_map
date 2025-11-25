@@ -91,8 +91,8 @@ const CantoFilters = ({
                   const flag = getCountryFlag(option);
                   return (
                     <SelectItem key={option} value={countryName}>
-                      <span className="mr-2">{flag}</span>
                       {countryName}
+                      <span className="mr-2">{flag}</span>
                     </SelectItem>
                   );
                 }
