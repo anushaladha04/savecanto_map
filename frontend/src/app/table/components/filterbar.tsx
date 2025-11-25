@@ -5,9 +5,9 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from './ui/select';
+} from '../ui/select';
 import countries from 'i18n-iso-countries';
-import { getCountryName, getCountryFlag } from './utils/countries';
+import { getCountryName, getCountryFlag } from '../utils/countries';
 
 countries.registerLocale(require("i18n-iso-countries/langs/en.json"));
 

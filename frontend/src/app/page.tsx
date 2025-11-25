@@ -1,4 +1,4 @@
-import CantoTable from './table/components/table';
+import CantoTable from './table/table';
 
 export default function Home() {
   return (

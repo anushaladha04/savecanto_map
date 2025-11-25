@@ -9,9 +9,9 @@ import {
 } from './ui/table';
 import { useEffect, useState } from 'react';
 import Papa from 'papaparse';
-import SearchBar from './searchBar';
-import TableFilters from './filterbar';
-import TablePagination from './pagination';
+import SearchBar from './components/searchBar';
+import TableFilters from './components/filterbar';
+import TablePagination from './components/pagination';
 import { ArrowUpDown, SortAscIcon, SortDescIcon } from 'lucide-react';
 
 interface CsvRow {

@@ -1,6 +1,6 @@
 'use client';
-import { Input } from './ui/input';
-import { SearchIcon } from './ui/icons/lucide-search';
+import { Input } from '../ui/input';
+import { SearchIcon } from '../ui/icons/lucide-search';
 
 interface SearchBarProps {
   value: string;
