@@ -1,6 +1,6 @@
 // owner: anusha
 // provides structure for other devs
-// NOTE: Added code for testing
+// NOTE: Added code for testing - Contains wiring for zoom components (ZoomControls, SaveCantoIcon, handlePinClick)
 
 'use client';
 

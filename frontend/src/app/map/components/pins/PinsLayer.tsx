@@ -1,8 +1,7 @@
 // owner: haydn
 // renders pins for selected region
 // uses filtered programs + region zoom state
-
-// I used this for testing pin markers
+// NOTE: Basic implementation for pin rendering - needed for zoom functionality to work
 
 'use client';
 
