@@ -80,10 +80,10 @@ const CantoFilters = ({
       {filters.map(({ label, value, setValue, options, placeholder, isCountry }) => (
         <div key={label}>
           <Select value={value} onValueChange={setValue}>
-            <SelectTrigger className="w-[200px]">
+            <SelectTrigger className="w-[200px] border-[#E5E6E8]">
               <SelectValue placeholder={placeholder} />
             </SelectTrigger>
-            <SelectContent className="bg-background max-h-[300px] overflow-y-auto">
+            <SelectContent className="bg-background max-h-[300px] overflow-y-auto border-slate-100">
               <SelectItem value="all">{placeholder}</SelectItem>
               {options.map(option => {
                 if (isCountry) {

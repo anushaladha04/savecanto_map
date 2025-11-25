@@ -39,7 +39,7 @@ const CantoTable = () => {
   const [cityFilter, setCityFilter] = useState('all');
   const [countryFilter, setCountryFilter] = useState('all');
   const [page, setPage] = useState(1);
-  const rowsPerPage = 20;
+  const rowsPerPage = 10;
 
   const [sortOrder, setSortOrder] = useState<SortOrder>('default');
   const [sortKey, setSortKey] = useState<SortKey | null>(null); // null for default
@@ -133,7 +133,7 @@ const CantoTable = () => {
 
       <Table className="table-fixed w-full">
         <TableHeader style={{ backgroundColor: '#F5F7FA' }}>
-          <TableRow>
+          <TableRow className='border-b border-[#E5E6E8]'>
             {headers.map(header => {
               const isActive = sortKey === header;
               return (
@@ -159,7 +159,7 @@ const CantoTable = () => {
 
         <TableBody>
           {paginatedData.map(row => (
-            <TableRow key={row.key}>
+            <TableRow key={row.key} className='border-[#E5E6E8] h-16 bg-[#FDFEFF]'>
               <TableCell className="w-40 whitespace-normal break-words">{row.Name || DEFAULT_VALUE}</TableCell>
               <TableCell className="w-40 whitespace-normal break-words">{row.Audience || DEFAULT_VALUE}</TableCell>
               <TableCell className="w-40 whitespace-normal break-words">{row.City || DEFAULT_VALUE}</TableCell>
