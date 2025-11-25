@@ -1,4 +1,4 @@
-import * as Papa from 'papaparse';
+import * as Papa from "papaparse";
 
 const SHEET_CSV_URL =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vTLxKh_BgtzfkkUmcixsAzj4MWgh3K--aigbSVzBIq7qw7FVhZVVz9xx4IwspHzVFl92QnlDYftxPBu/pub?gid=0&single=true&output=csv";
@@ -19,4 +19,3 @@ export async function loadPrograms() {
     });
   });
 }
-
