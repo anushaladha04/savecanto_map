@@ -2,8 +2,10 @@
 // sliding panel UI
 // loads selected program details
 // panel closes on X (ask design which zoom status to revert to on X)
+
+"use client";
+
 import { useEffect, useState } from "react";
-import { IS_RAPTOR_MINI_ENABLED } from "../../hooks/useSelectedPrograms";
 import { loadPrograms } from "../../utils/loadPrograms";
 
 interface ProgramDetails {
@@ -100,12 +102,6 @@ export function SidePanel({ isOpen, onClose, programId }: SidePanelProps) {
           ×
         </button>
       </header>
-
-      {IS_RAPTOR_MINI_ENABLED && (
-        <div className="side-panel__feature-badge">
-          Raptor mini (Preview) — enabled for all clients
-        </div>
-      )}
 
       <div className="side-panel__content">
         {isLoading && <p>Loading…</p>}
