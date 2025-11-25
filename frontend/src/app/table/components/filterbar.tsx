@@ -5,7 +5,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from './ui/select';
 import countries from 'i18n-iso-countries';
 import { getCountryName, getCountryFlag } from './utils/countries';
 

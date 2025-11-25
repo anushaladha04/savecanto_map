@@ -6,7 +6,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from './ui/table';
 import { useEffect, useState } from 'react';
 import Papa from 'papaparse';
 import SearchBar from './searchBar';
