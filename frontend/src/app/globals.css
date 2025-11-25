@@ -24,3 +24,18 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.side-panel {
+  /* Use explicit font settings so Instrument Sans is normal-style and usable */
+  font-family: "Instrument Sans", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  letter-spacing: normal;
+}
+
+.side-panel-body {
+  font-weight: 400;
+  /* tighten text spacing so lines and stacked items appear closer */
+  line-height: 1.15;
+}

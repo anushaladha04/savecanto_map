@@ -15,7 +15,6 @@ interface Program {
   website?: string;
 }
 
-// Hook now only manages selection + open/close UI state.
 export default function useSelectedPrograms(initialProgramId?: string | null) {
   const [selectedProgramId, setSelectedProgramId] = useState<string | null>(
     initialProgramId ?? null

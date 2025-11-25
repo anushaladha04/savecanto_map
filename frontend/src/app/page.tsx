@@ -1,22 +1,19 @@
 "use client";
+import { useState } from "react";
 import BaseMap from "./map/components/BaseMap";
 import { SidePanel } from "./map/components/panel/SidePanel";
-import useSelectedPrograms from "./map/hooks/useSelectedPrograms";
 
 export default function Home() {
-  const { selectedProgramId, open, close, isOpen } = useSelectedPrograms();
+  const [isOpen, setIsOpen] = useState(true);
 
   return (
     <main className="min-h-screen grid place-items-center p-10">
       <h1 className="text-3xl font-bold">World Map of Cantonese Programs</h1>
-      <div className="w-[90vw] h-[80vh]">
+      <div className="relative w-[90vw] h-[80vh]">
         <BaseMap />
 
-        <SidePanel
-          isOpen={isOpen}
-          onClose={close}
-          programId={selectedProgramId}
-        />
+        {/* show side panel UI for visual/debugging — ignoring program selection for now */}
+        <SidePanel isOpen={isOpen} onClose={() => setIsOpen(false)} />
       </div>
       <h2 className="text-2xl font-bold">Table Placeholder</h2>
     </main>
