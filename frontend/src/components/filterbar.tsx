@@ -76,11 +76,11 @@ const CantoFilters = ({
   ];
 
   return (
-    <div className="flex gap-4">
+    <div className="flex gap-2">
       {filters.map(({ label, value, setValue, options, placeholder, isCountry }) => (
         <div key={label}>
           <Select value={value} onValueChange={setValue}>
-            <SelectTrigger className="w-[200px] border-[#E5E6E8]">
+            <SelectTrigger className="w-[200px] border-slate-300">
               <SelectValue placeholder={placeholder} />
             </SelectTrigger>
             <SelectContent className="bg-background max-h-[300px] overflow-y-auto border-slate-100">

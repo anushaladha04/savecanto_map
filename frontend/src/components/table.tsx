@@ -142,13 +142,15 @@ const CantoTable = () => {
                   className="w-40 whitespace-nowrap break-words cursor-pointer"
                   onClick={() => handleSort(header)}
                 >
-                  <div className="flex items-center space-x-1">
+                  <div className="flex items-center justify-between">
                     <span>{header}</span>
-                    {isActive ? (
-                      sortOrder === 'asc' ? <SortAscIcon size={16} /> : sortOrder === 'desc' ? <SortDescIcon size={16} /> : <ArrowUpDown size={16} />
-                    ) : (
-                      <ArrowUpDown size={16} />
-                    )}
+                    <span className='mr-6'>
+                      {isActive ? (
+                        sortOrder === 'asc' ? <SortAscIcon size={16} /> : sortOrder === 'desc' ? <SortDescIcon size={16} /> : <ArrowUpDown size={16} />
+                      ) : (
+                        <ArrowUpDown size={16} />
+                      )}
+                    </span>
 
                   </div>
                 </TableHead>
