@@ -33,7 +33,7 @@ export default function MapContainer() {
   const mapWidth = typeof window !== 'undefined' ? window.innerWidth * 0.9 : 800;
   const mapHeight = typeof window !== 'undefined' ? window.innerHeight * 0.8 : 600;
 
-  const { zoomToRegion } = useZoom({
+  const { zoomToRegion, resetView } = useZoom({
     mapRef,
     mapWidth,
     mapHeight,
@@ -56,6 +56,7 @@ export default function MapContainer() {
 
   // Handle cluster click - zoom to region and show pins
   const handleRegionSelect = (cluster: RegionCluster) => {
+    // Zoom to the region
     zoomToRegion(cluster);
     
     // Calculate bounding box for the region
@@ -65,12 +66,18 @@ export default function MapContainer() {
       cluster.pointCount
     );
     
-    // Set selected region to show pins
+    // Set selected region to show pins (this will hide clusters)
     setSelectedRegion({
       id: `region-${cluster.id}`,
       name: `Region ${cluster.id}`,
       boundingBox,
     });
+  };
+
+  // Handle reset - go back to cluster view
+  const handleResetView = () => {
+    resetView();
+    setSelectedRegion(null); // Clear selected region to show clusters again
   };
 
   // Handle pin click - could zoom to pin and open panel
@@ -81,7 +88,11 @@ export default function MapContainer() {
 
   return (
     <BaseMap mapRef={mapRef}>
-      <ClusterLayer onRegionSelect={handleRegionSelect} />
+      {/* Hide clusters when a region is selected */}
+      <ClusterLayer 
+        onRegionSelect={handleRegionSelect} 
+        visible={!selectedRegion}
+      />
       {/* Show pins when a region is selected */}
       {selectedRegion && !loading && (
         <PinsLayer
