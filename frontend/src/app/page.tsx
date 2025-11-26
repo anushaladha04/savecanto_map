@@ -76,17 +76,17 @@ export default function Home() {
             programs={csvData} 
             onPinClick={handlePinClick}
           />
-      </div>
-        
-        {/* SidePanel manages its own state */}
-        <SidePanel 
-          csvData={csvData}
-          filteredData={filteredData}
-          csvLoading={csvLoading}
-          csvError={csvError}
-          hasActiveFilters={hasActiveFilters}
-          onPinClickHandlerReady={setPinClickHandler}
-        />
+          
+          {/* SidePanel manages its own state - fixed inside map container */}
+          <SidePanel 
+            csvData={csvData}
+            filteredData={filteredData}
+            csvLoading={csvLoading}
+            csvError={csvError}
+            hasActiveFilters={hasActiveFilters}
+            onPinClickHandlerReady={setPinClickHandler}
+          />
+        </div>
       </div>
       
       <div className="w-[90vw]">
