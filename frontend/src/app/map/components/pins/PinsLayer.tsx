@@ -2,7 +2,6 @@
 // renders pins for selected region
 // uses filtered programs + region zoom state
 
-
 'use client';
 
 import { useState } from 'react';
@@ -30,11 +29,12 @@ interface Region {
   boundingBox: BoundingBox;  // { north, south, east, west } from geoUtils
 }
 
-// Props that PinsLayer component receives
+// Props that PinsLayer component receives - supports both interfaces
 interface PinsLayerProps {
-  programs: Program[];           // array of ALL programs from CSV
-  selectedRegion: Region | null; // currently selected region (null if none selected)
-  onPinClick?: (program: Program) => void;  // callback when user clicks a pin
+  // Region-based interface (from HEAD)
+  programs?: Program[] | any[];           // array of ALL programs from CSV
+  selectedRegion?: Region | null; // currently selected region (null if none selected)
+  onPinClick?: (program: Program | any, latitude?: number, longitude?: number) => void;  // callback when user clicks a pin
 }
 
 // ===== HELPER FUNCTIONS =====
@@ -60,99 +60,138 @@ const tooltipColorMap: Record<string, string> = {
   other: '#7DD48B',       // green
 };
 
+// Helper to extract lat/lng from program object (handles various field names)
+function getCoordinates(program: any): { lat: number | null; lng: number | null } {
+  const lat = program.latitude || program.Latitude || program.lat || program.Lat;
+  const lng = program.longitude || program.Longitude || program.lng || program.Lng || program.lon || program.Lon;
+  return { lat, lng };
+}
 
-
-
-// ===== MAIN COMPONENT =====          (pins are loaded when fnc PinsLayer is called and the selectedRegion is passed in)
+// ===== MAIN COMPONENT =====
 
 export default function PinsLayer({
-  programs,
+  programs = [],
   selectedRegion,
   onPinClick,
 }: PinsLayerProps) {
-  // ------------------------------ Hover state for pin (program info preview) ------------------------------------------
   // Track which pin is currently hovered
   const [hoveredPinId, setHoveredPinId] = useState<string | null>(null);
 
-  // Filter programs: only keep ones that are in the selected region
-  // If no region is selected, show no pins (empty array)
-  const regionPrograms = selectedRegion
-    ? programs.filter((p) => isInRegion(p, selectedRegion))
-    : [];
+  // Determine if we're in region-filtering mode or simple mode
+  // If selectedRegion is provided and not null, we're in region mode (filter pins)
+  // If selectedRegion is null or undefined, we're in simple mode (show all pins)
+  const isRegionMode = selectedRegion !== null && selectedRegion !== undefined;
+  
+  // Filter programs based on mode
+  let displayPrograms: any[] = [];
+  
+  if (isRegionMode && selectedRegion) {
+    // Region mode: filter programs by region boundaries
+    displayPrograms = (programs as Program[]).filter((p) => isInRegion(p, selectedRegion));
+  } else {
+    // Simple mode: show ALL programs (initial view - no region selected)
+    displayPrograms = programs;
+  }
 
   return (
     <>
-      {/* Loop through filtered programs and render a pin for each */}
-      {regionPrograms.map((program) => (
-        <Marker
-          key={program.id}
-          longitude={program.longitude}  // X position on map
-          latitude={program.latitude}    // Y position on map
-          anchor="bottom"                // pin tip points to the location
-        >
-          {/* Pin wrapper with hover handlers */}
-          <div
-            onMouseEnter={() => setHoveredPinId(program.id)}
-            onMouseLeave={() => setHoveredPinId(null)}
-            style={{ position: 'relative' }}
-          >
-            {/* PinMarker is the visual icon (colored circle + point) */}
-            <PinMarker
-              type={program.type}                    // determines color
-              // -----------------------------------------Click behavior --------------------------------------------------
-              // When pin is clicked, call onPinClick callback with program data
-              // This triggers: zoom to pin level + open panel (handled elsewhere)
-              onClick={() => {
-                onPinClick?.(program); // Pass program data up
-                console.log('Pin clicked:', program);  // Log to console for testing
-              }}
-            />
+      {displayPrograms.map((program, index) => {
+        // Get coordinates - handle both Program interface and any object
+        const coords = getCoordinates(program);
+        const lat = coords.lat;
+        const lng = coords.lng;
+        const programId = program.id || `pin-${index}`;
 
-            {/* Tooltip showing program name on hover */}
-            {hoveredPinId === program.id && (
+        if (!lat || !lng) {
+          return null;
+        }
+
+        // In region mode, use the full UI with tooltips
+        if (isRegionMode && selectedRegion) {
+          return (
+            <Marker
+              key={programId}
+              longitude={lng}
+              latitude={lat}
+              anchor="bottom"
+            >
+              {/* Pin wrapper with hover handlers */}
               <div
-                style={{
-                  position: 'absolute',
-                  pointerEvents: 'none',
-                  top: '-25px',
-                  right: '5px',
-                  marginTop: '-10px',
-                }}
+                onMouseEnter={() => setHoveredPinId(programId)}
+                onMouseLeave={() => setHoveredPinId(null)}
+                style={{ position: 'relative' }}
               >
-                {/* Tooltip box with chat bubble arrow on bottom-right */}
-                <div
-                  style={{
-                    backgroundColor: tooltipColorMap[program.type],
-                    color: 'white',
-                    padding: '6px 10px',
-                    borderRadius: '3px',
-                    fontSize: '11px',
-                    fontWeight: 500,
-                    whiteSpace: 'nowrap',
-                    position: 'relative',
+                {/* PinMarker is the visual icon (colored circle + point) */}
+                <PinMarker
+                  type={program.type}
+                  onLegacyClick={() => {
+                    // Support both old and new onClick signatures
+                    if (onPinClick) {
+                      onPinClick(program, lat, lng);
+                    }
                   }}
-                >
-                  {program.name}
-                  
-                  {/* Arrow/pointer for chat bubble - bottom right */}
+                  isHovered={hoveredPinId === programId}
+                  size={32}
+                />
+
+                {/* Tooltip showing program name on hover */}
+                {hoveredPinId === programId && (
                   <div
                     style={{
                       position: 'absolute',
-                      bottom: '-4px',
-                      right: '8px',
-                      width: 0,
-                      height: 0,
-                      borderLeft: '5px solid transparent',
-                      borderRight: '5px solid transparent',
-                      borderTop: `5px solid ${tooltipColorMap[program.type]}`,
+                      pointerEvents: 'none',
+                      top: '-25px',
+                      right: '5px',
+                      marginTop: '-10px',
                     }}
-                  />
-                </div>
+                  >
+                    {/* Tooltip box with chat bubble arrow on bottom-right */}
+                    <div
+                      style={{
+                        backgroundColor: tooltipColorMap[program.type] || tooltipColorMap.other,
+                        color: 'white',
+                        padding: '6px 10px',
+                        borderRadius: '3px',
+                        fontSize: '11px',
+                        fontWeight: 500,
+                        whiteSpace: 'nowrap',
+                        position: 'relative',
+                      }}
+                    >
+                      {program.name}
+                      
+                      {/* Arrow/pointer for chat bubble - bottom right */}
+                      <div
+                        style={{
+                          position: 'absolute',
+                          bottom: '-4px',
+                          right: '8px',
+                          width: 0,
+                          height: 0,
+                          borderLeft: '5px solid transparent',
+                          borderRight: '5px solid transparent',
+                          borderTop: `5px solid ${tooltipColorMap[program.type] || tooltipColorMap.other}`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        </Marker>
-      ))}
+            </Marker>
+          );
+        }
+
+        // Simple mode: use PinMarker with new interface (wraps Marker internally)
+        return (
+          <PinMarker
+            key={programId}
+            latitude={lat}
+            longitude={lng}
+            program={program}
+            onClick={onPinClick}
+          />
+        );
+      })}
     </>
   );
 }

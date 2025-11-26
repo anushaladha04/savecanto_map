@@ -1,28 +1,20 @@
 // owner: haydn and sunny
 // haydn: individual pin icon UI (adults, kids, etc.)
 // sunny: logic
-    // onClick --> zoom to pin level + open panel
+// onClick --> zoom to pin level + open panel
 
 'use client';
 
 import React from 'react';
+import { Marker } from 'react-map-gl/maplibre';
 
 // --------------------------PINS MARKER COMPONENT!! (haydn) ------------------------------
 // Build color pin icons (adults/kids/college/other)
 // Renders colored pin with matching icon for each program type
 
-
 type ProgramType = 'adults' | 'kids' | 'college' | 'other';
 
-// accepted components (shapes & props)
-interface PinMarkerProps {
-  type: ProgramType;           // which program type (determines color)
-  size?: number;               // optional pin size in pixels (default: 32)
-  onClick?: () => void;        // optional click handler function
-  isHovered?: boolean;         // optional flag for hover styling
-}
-
-// map each program to color
+// Map each program to color
 const colorMap: Record<ProgramType, string> = {
   adults: '#1FC6E3',           // blue
   kids: '#FFC300',             // yellow
@@ -30,14 +22,24 @@ const colorMap: Record<ProgramType, string> = {
   other: '#7DD48B',            // green
 };
 
-// Main component: renders a colored pin icon for a program
-export default function PinMarker({
-  type,
-  size = 32,
-  onClick,
-  isHovered,
-}: PinMarkerProps) {
-  // Get the color based on program type
+// Props interface - supports both old and new interfaces
+interface PinMarkerProps {
+  // New interface (from sunny_micro_zoom) - for Marker wrapper
+  latitude?: number;
+  longitude?: number;
+  program?: any;
+  onClick?: (program: any, latitude: number, longitude: number) => void;
+  
+  // Old interface (from HEAD) - for use inside existing Marker
+  type?: ProgramType;
+  size?: number;
+  isHovered?: boolean;
+  // Legacy onClick for old interface
+  onLegacyClick?: () => void;
+}
+
+// Internal component: renders the SVG pin icon
+function PinIcon({ type, size = 32, isHovered }: { type: ProgramType; size?: number; isHovered?: boolean }) {
   const color = colorMap[type];
 
   return (
@@ -45,10 +47,7 @@ export default function PinMarker({
       width={size}
       height={size + 16}
       viewBox="0 0 32 48"
-      onClick={onClick}
-      // ------------------------  onClick triggers pin click handler -----------------------------------
       style={{ 
-        cursor: onClick ? 'pointer' : 'default',
         filter: isHovered ? 'drop-shadow(0 0 8px rgba(0,0,0,0.4))' : 'none',
         transform: isHovered ? 'scale(1.2)' : 'scale(1)',
         transition: 'all 0.2s ease-in-out',
@@ -120,5 +119,51 @@ export default function PinMarker({
         </g>
       )}
     </svg>
+  );
+}
+
+// Main component: renders a Marker with Haydn's pin icon or just the SVG
+export default function PinMarker({
+  latitude,
+  longitude,
+  program,
+  onClick,
+  type,
+  size = 32,
+  isHovered,
+  onLegacyClick,
+}: PinMarkerProps) {
+  // Determine program type from prop or program object
+  const programType: ProgramType = type || (program?.type as ProgramType) || 'other';
+
+  // Handle click - support both new and old interfaces
+  const handleClick = () => {
+    if (onClick && latitude !== undefined && longitude !== undefined && program) {
+      onClick(program, latitude, longitude);
+    } else if (onLegacyClick) {
+      onLegacyClick();
+    }
+  };
+
+  // If latitude/longitude are provided, use Marker wrapper (new interface)
+  if (latitude !== undefined && longitude !== undefined) {
+    return (
+      <Marker
+        latitude={latitude}
+        longitude={longitude}
+        anchor="bottom"
+        onClick={handleClick}
+        style={{ cursor: onClick || onLegacyClick ? 'pointer' : 'default' }}
+      >
+        <PinIcon type={programType} size={size} isHovered={isHovered} />
+      </Marker>
+    );
+  }
+
+  // Otherwise, return just the SVG (old interface for use in PinsLayer with region filtering)
+  return (
+    <div onClick={handleClick} style={{ cursor: onLegacyClick ? 'pointer' : 'default' }}>
+      <PinIcon type={programType} size={size} isHovered={isHovered} />
+    </div>
   );
 }

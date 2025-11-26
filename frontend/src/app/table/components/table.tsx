@@ -12,6 +12,7 @@ import Papa from 'papaparse';
 import SearchBar from './searchBar';
 import TableFilters from './filterbar';
 import TablePagination from './pagination';
+import { ArrowUpDown, SortAscIcon, SortDescIcon } from 'lucide-react';
 
 interface CsvRow {
   Name: string;
@@ -19,14 +20,12 @@ interface CsvRow {
   City: string;
   'State/Province': string;
   Country: string;
-  'Level of Cantonese': string;
   Address: string;
-  Latitude: string;
-  Longitude: string;
   Website: string;
-  'Website Verification': string;
-  'Approval Status': string;
 }
+
+type SortKey = 'Name' | 'Audience' | 'City' | 'State/Province' | 'Country' | 'Address' | 'Website';
+type SortOrder = 'asc' | 'desc';
 
 const CantoTable = () => {
   const sheetURL =
@@ -41,6 +40,10 @@ const CantoTable = () => {
   const [countryFilter, setCountryFilter] = useState('all');
   const [page, setPage] = useState(1);
   const rowsPerPage = 20;
+
+  // Default sorting: Name ascending
+  const [sortKey, setSortKey] = useState<SortKey>('Name');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
   const DEFAULT_VALUE = '-----';
 
@@ -64,13 +67,11 @@ const CantoTable = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  // Get unique values for each filter
-  const uniqueAudiences = Array.from(new Set(data.map(row => row.Audience).filter(Boolean))).sort();
+  // Unique values for filters
   const uniqueProvinces = Array.from(new Set(data.map(row => row['State/Province']).filter(Boolean))).sort();
   const uniqueCities = Array.from(new Set(data.map(row => row.City).filter(Boolean))).sort();
-  const uniqueCountries = Array.from(new Set(data.map(row => row.Country).filter(Boolean))).sort();
 
-  // Apply all filters
+  // Apply filters
   const filteredData = data.filter(row => {
     const matchesSearch = row.Name?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesAudience = audienceFilter === 'all' || row.Audience === audienceFilter;
@@ -81,8 +82,29 @@ const CantoTable = () => {
     return matchesSearch && matchesAudience && matchesProvince && matchesCity && matchesCountry;
   });
 
+  // Apply sorting
+  const sortedData = [...filteredData].sort((a, b) => {
+    if (!sortKey) return 0;
+    const valA = (a[sortKey] || '').toString().toLowerCase();
+    const valB = (b[sortKey] || '').toString().toLowerCase();
+    if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
+    if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
+    return 0;
+  });
+
   const startIndex = (page - 1) * rowsPerPage;
-  const paginatedData = filteredData.slice(startIndex, startIndex + rowsPerPage);
+  const paginatedData = sortedData.slice(startIndex, startIndex + rowsPerPage);
+
+  const handleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortKey(key);
+      setSortOrder('asc');
+    }
+  };
+
+  const headers: SortKey[] = ['Name', 'Audience', 'City', 'State/Province', 'Country', 'Address', 'Website'];
 
   return (
     <div className="space-y-4">
@@ -96,26 +118,34 @@ const CantoTable = () => {
           setCityFilter={setCityFilter}
           countryFilter={countryFilter}
           setCountryFilter={setCountryFilter}
-          uniqueAudiences={uniqueAudiences}
           uniqueProvinces={uniqueProvinces}
           uniqueCities={uniqueCities}
-          uniqueCountries={uniqueCountries}
         />
         <SearchBar value={searchTerm} onChange={setSearchTerm} />
       </div>
 
-      {/* TABLE */}
       <Table className="table-fixed w-full">
         <TableHeader>
           <TableRow>
-            {['Name', 'Audience', 'City', 'State / Province', 'Country', 'Address', 'Website'].map(header => (
-              <TableHead
-                className="w-40 whitespace-normal break-words"
-                key={header}
-              >
-                {header}
-              </TableHead>
-            ))}
+            {headers.map(header => {
+              const isActive = sortKey === header;
+              return (
+                <TableHead
+                  key={header}
+                  className="w-40 whitespace-nowrap break-words cursor-pointer"
+                  onClick={() => handleSort(header)}
+                >
+                  <div className="flex items-center space-x-1">
+                    <span>{header}</span>
+                    {isActive ? (
+                      sortOrder === 'asc' ? <SortAscIcon size={16} /> : <SortDescIcon size={16} />
+                    ) : (
+                      <ArrowUpDown size={16} />
+                    )}
+                  </div>
+                </TableHead>
+              );
+            })}
           </TableRow>
         </TableHeader>
 
@@ -125,9 +155,7 @@ const CantoTable = () => {
               <TableCell className="w-40 whitespace-normal break-words">{row.Name || DEFAULT_VALUE}</TableCell>
               <TableCell className="w-40 whitespace-normal break-words">{row.Audience || DEFAULT_VALUE}</TableCell>
               <TableCell className="w-40 whitespace-normal break-words">{row.City || DEFAULT_VALUE}</TableCell>
-              <TableCell className="w-40 whitespace-normal break-words">
-                {row['State/Province'] || DEFAULT_VALUE}
-              </TableCell>
+              <TableCell className="w-40 whitespace-normal break-words">{row['State/Province'] || DEFAULT_VALUE}</TableCell>
               <TableCell className="w-40 whitespace-normal break-words">{row.Country || DEFAULT_VALUE}</TableCell>
               <TableCell className="w-40 whitespace-normal break-words">{row.Address || DEFAULT_VALUE}</TableCell>
               <TableCell className="w-40 whitespace-normal break-words">
@@ -148,8 +176,6 @@ const CantoTable = () => {
           ))}
         </TableBody>
       </Table>
-      
-      {/* Pagination */}
       <div>
         <TablePagination
           currentPage={page}
