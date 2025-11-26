@@ -10,7 +10,7 @@ import Map, { MapRef } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 interface BaseMapProps {
-  mapRef?: React.RefObject<MapRef>;
+  mapRef?: React.RefObject<MapRef | null>;
   children?: React.ReactNode;
   initialViewState?: {
     longitude: number;
