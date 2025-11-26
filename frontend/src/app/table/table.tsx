@@ -73,11 +73,10 @@ const CantoTable = () => {
   // Apply filters
   const filteredData = data.filter(row => {
     const matchesSearch = row.Name?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesAudience = audienceFilter === 'all' || row.Audience === audienceFilter;
-    const matchesProvince = provinceFilter === 'all' || row['State/Province'] === provinceFilter;
-    const matchesCity = cityFilter === 'all' || row.City === cityFilter;
-    const matchesCountry = countryFilter === 'all' || row.Country === countryFilter;
-
+    const matchesAudience = !audienceFilter || audienceFilter === 'all' || row.Audience === audienceFilter;
+    const matchesProvince = !provinceFilter || provinceFilter === 'all' || row['State/Province'] === provinceFilter;
+    const matchesCity = !cityFilter || cityFilter === 'all' || row.City === cityFilter;
+    const matchesCountry = !countryFilter || countryFilter === 'all' || row.Country === countryFilter;
     return matchesSearch && matchesAudience && matchesProvince && matchesCity && matchesCountry;
   });
 
