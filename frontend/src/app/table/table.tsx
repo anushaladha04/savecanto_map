@@ -34,10 +34,10 @@ const CantoTable = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [audienceFilter, setAudienceFilter] = useState('all');
-  const [provinceFilter, setProvinceFilter] = useState('all');
-  const [cityFilter, setCityFilter] = useState('all');
-  const [countryFilter, setCountryFilter] = useState('all');
+  const [audienceFilter, setAudienceFilter] = useState('');
+  const [provinceFilter, setProvinceFilter] = useState('');
+  const [cityFilter, setCityFilter] = useState('');
+  const [countryFilter, setCountryFilter] = useState('');
   const [page, setPage] = useState(1);
   const rowsPerPage = 10;
 

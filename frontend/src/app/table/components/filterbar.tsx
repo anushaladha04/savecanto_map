@@ -47,6 +47,7 @@ const CantoFilters = ({
       setValue: setAudienceFilter, 
       options: AudienceOptions, 
       placeholder: "Select an Audience",
+      allLabel: "All",
       isCountry: false
     },
     { 
@@ -54,7 +55,8 @@ const CantoFilters = ({
       value: countryFilter, 
       setValue: setCountryFilter, 
       options: allCountryCodes, 
-      placeholder: "Country",
+      placeholder: "Select a Country",
+      allLabel: "All",
       isCountry: true
     },
     { 
@@ -62,7 +64,8 @@ const CantoFilters = ({
       value: provinceFilter, 
       setValue: setProvinceFilter, 
       options: uniqueProvinces || [], 
-      placeholder: "State/Province",
+      placeholder: "Select a State/Province",
+      allLabel: "All",
       isCountry: false
     },
     { 
@@ -70,21 +73,22 @@ const CantoFilters = ({
       value: cityFilter, 
       setValue: setCityFilter, 
       options: uniqueCities || [], 
-      placeholder: "City",
+      placeholder: "Select a City",
+      allLabel: "All",
       isCountry: false
     },
   ];
 
   return (
     <div className="flex gap-2">
-      {filters.map(({ label, value, setValue, options, placeholder, isCountry }) => (
-        <div key={label}>
+      {filters.map(({ label, value, setValue, options, placeholder, allLabel, isCountry }) => (
+        <div key={label} className="relative">
           <Select value={value} onValueChange={setValue}>
-            <SelectTrigger className="w-[200px] border-slate-300">
+            <SelectTrigger className={`w-[200px] border-slate-300 [&>span]:text-black ${value && value !== "all" ? "[&>svg]:hidden" : ""}`}>
               <SelectValue placeholder={placeholder} />
             </SelectTrigger>
             <SelectContent className="bg-background max-h-[300px] overflow-y-auto border-slate-100">
-              <SelectItem value="all">{placeholder}</SelectItem>
+              <SelectItem value="all">{allLabel}</SelectItem>
               {options.map(option => {
                 if (isCountry) {
                   const countryName = getCountryName(option);
@@ -100,6 +104,17 @@ const CantoFilters = ({
               })}
             </SelectContent>
           </Select>
+          {value && value !== "all" && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setValue('');
+              }}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 z-10 p-1"
+            >
+              ✕
+            </button>
+          )}
         </div>
       ))}
     </div>
