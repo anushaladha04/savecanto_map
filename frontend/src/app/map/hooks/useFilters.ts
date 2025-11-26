@@ -1,12 +1,12 @@
 import { useState, useMemo } from 'react';
-import { CsvRow } from '../types/types';
+import { CsvRow } from '../components/filters/types';
 
 export const useFilters = (data: CsvRow[]) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [audienceFilter, setAudience] = useState('all');
-  const [provinceFilter, setProvince] = useState('all');
-  const [cityFilter, setCity] = useState('all');
-  const [countryFilter, setCountry] = useState('all');
+  const [audienceFilter, setAudience] = useState('');
+  const [provinceFilter, setProvince] = useState('');
+  const [cityFilter, setCity] = useState('');
+  const [countryFilter, setCountry] = useState('');
 
   const uniqueProvinces = useMemo(() => 
     Array.from(new Set(data.map(row => row['State/Province']).filter(Boolean))).sort(),

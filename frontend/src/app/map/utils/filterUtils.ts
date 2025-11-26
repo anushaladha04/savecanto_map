@@ -1,5 +1,5 @@
 // owner: alyssa (filtering logic)
-import { CsvRow } from '../types/types';
+import { CsvRow } from '../components/filters/types';
 import countries from 'i18n-iso-countries';
 
 // Get unique, sorted values for a given column

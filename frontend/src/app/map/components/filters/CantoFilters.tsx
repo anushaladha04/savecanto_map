@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { CsvRow } from '../../types/types';
+import { CsvRow } from './types';
 import { getCountryName, getCountryFlag, allCountryCodes } from '../../utils/filterUtils';
 
 interface Props {

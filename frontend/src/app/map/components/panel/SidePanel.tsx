@@ -2,109 +2,58 @@
 // sliding panel UI
 // loads selected program details
 // panel closes on X (ask design which zoom status to revert to on X)
-
 "use client";
-
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { loadPrograms } from "../../utils/loadPrograms";
 import { AdvancedDetails } from "./AdvancedDetails";
 import { SelectedPrograms } from "./SelectedPrograms";
 import type { ProgramDetails } from "./types";
+import type { CsvRow } from "../filters/types";
 
 interface SidePanelProps {
   isOpen: boolean;
   onClose: () => void;
   programId?: string | null;
+  csvData: CsvRow[];
+  filteredData: CsvRow[];
+  csvLoading: boolean;
+  csvError: string | null;
 }
-export function SidePanel({ isOpen, onClose, programId }: SidePanelProps) {
+
+export function SidePanel({ 
+  isOpen, 
+  onClose, 
+  programId,
+  csvData,
+  filteredData,
+  csvLoading,
+  csvError 
+}: SidePanelProps) {
   const [program, setProgram] = useState<ProgramDetails | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  // demo placeholders — multiple programs for the list view
-  const placeholderPrograms: ProgramDetails[] = [
-    {
-      id: "ccba-chicago",
-      name: "CCBA Chicago Chinese School",
-      city: "Chicago, IL",
-      email: "ccbachicago@comcast.net",
-      phoneNumber: "(312) 555-0100",
-      category: "Children & Teens",
-      website: "https://ccba.example.org",
-      address: "123 Fake Rd, Apt #1, Chicago, IL 60007, USA",
-    },
-    {
-      id: "bowls-for-all",
-      name: "Bowls for All",
-      city: "Evanston, IL",
-      email: "info@bowlsforall.org",
-      phoneNumber: "(847) 555-0123",
-      category: "Community",
-      website: "https://bowls.example.org",
-      address: "234 Fake Rd, Apt #1, Evanston, IL 60007, USA",
-    },
-    {
-      id: "literacy-lift",
-      name: "Literacy Lift",
-      city: "Oak Park, IL",
-      email: "contact@literacylift.org",
-      phoneNumber: "(708) 555-0456",
-      category: "Education",
-      website: "https://literacy.example.org",
-    },
-    {
-      id: "literacy-united",
-      name: "Literacy United",
-      city: "Oak Park, IL",
-      email: "contact@literacylift.org",
-      phoneNumber: "(708) 555-0456",
-      category: "Education",
-      website: "https://literacy.example.org",
-      address: "234 Fake Rd, Apt #1, Evanston, IL 60007, USA",
-    },
-    {
-      id: "literacy-general",
-      name: "Literacy General",
-      city: "Oak Park, IL",
-      email: "contact@literacylift.org",
-      phoneNumber: "(708) 555-0456",
-      category: "Education",
-      website: "https://literacy.example.org",
-      address: "234 Fake Rd, Apt #1, Evanston, IL 60007, USA",
-    },
-    {
-      id: "literacy",
-      name: "Literacy",
-      city: "Oak Park, IL",
-      email: "contact@literacylift.org",
-      phoneNumber: "(708) 555-0456",
-      category: "Education",
-      website: "https://literacy.example.org",
-    },
-    {
-      id: "literacy-world",
-      name: "Literacy World",
-      city: "Oak Park, IL",
-      email: "contact@literacylift.org",
-      phoneNumber: "(708) 555-0456",
-      category: "Education",
-      website: "https://literacy.example.org",
-    },
-    {
-      id: "literacy-universe",
-      name: "Literacy Universe",
-      city: "Oak Park, IL",
-      email: "contact@literacylift.org",
-      phoneNumber: "(708) 555-0456",
-      category: "Education",
-      website: "https://literacy.example.org",
-    },
-  ];
+  // Convert CSV rows to ProgramDetails format
+  const csvToProgramDetails = (csvRows: CsvRow[]): ProgramDetails[] => {
+    return csvRows.map((row, index) => ({
+      id: `csv-${index}`,
+      name: row.Name || "",
+      city: row.City || "",
+      email: row.Email || "",
+      phoneNumber: row["Phone Number"] || "",
+      category: row.Audience || "",
+      website: row.Website || "",
+      address: row.Address || "",
+    }));
+  };
+
+  // Use filtered data from parent - this will update when filters change
+  const allPrograms = useMemo(() => {
+    return csvToProgramDetails(filteredData);
+  }, [filteredData]);
 
   // UI state: if a program is selected the panel shows AdvancedDetails; otherwise show the list
-  const [selectedProgram, setSelectedProgram] = useState<ProgramDetails | null>(
-    null
-  );
+  const [selectedProgram, setSelectedProgram] = useState<ProgramDetails | null>(null);
 
   // when SidePanel opens with a programId, try to pick that program and show details
   useEffect(() => {
@@ -118,8 +67,8 @@ export function SidePanel({ isOpen, onClose, programId }: SidePanelProps) {
 
     if (!programId) return;
 
-    // prefer local placeholder match first
-    const local = placeholderPrograms.find((p) => p.id === programId);
+    // prefer local match first (including CSV programs)
+    const local = allPrograms.find((p) => p.id === programId);
     if (local) {
       setSelectedProgram(local);
       return;
@@ -128,6 +77,7 @@ export function SidePanel({ isOpen, onClose, programId }: SidePanelProps) {
     // otherwise try to fetch and resolve the programId
     let cancelled = false;
     setIsLoading(true);
+
     loadPrograms()
       .then((programs: any) => {
         if (cancelled) return;
@@ -178,7 +128,7 @@ export function SidePanel({ isOpen, onClose, programId }: SidePanelProps) {
     return () => {
       cancelled = true;
     };
-  }, [isOpen, programId]);
+  }, [isOpen, programId, allPrograms]);
 
   const handleSelectProgram = (p: ProgramDetails) => {
     setSelectedProgram(p);
@@ -198,7 +148,7 @@ export function SidePanel({ isOpen, onClose, programId }: SidePanelProps) {
       role="dialog"
       aria-hidden={!isOpen}
     >
-      {/* top-right close */}
+      {/* Close button */}
       <div className="flex justify-end p-4">
         <button
           aria-label="Close panel"
@@ -212,9 +162,11 @@ export function SidePanel({ isOpen, onClose, programId }: SidePanelProps) {
         </button>
       </div>
 
-      {/* show either the list or the advanced detail */}
-      {isLoading ? (
+      {/* Content */}
+      {csvLoading || isLoading ? (
         <div className="px-6 py-8">Loading…</div>
+      ) : csvError ? (
+        <div className="px-6 py-8 text-red-500">CSV Error: {csvError}</div>
       ) : error ? (
         <div className="px-6 py-8 text-red-500">Error: {error.message}</div>
       ) : selectedProgram ? (
@@ -225,7 +177,7 @@ export function SidePanel({ isOpen, onClose, programId }: SidePanelProps) {
         />
       ) : (
         <SelectedPrograms
-          programs={placeholderPrograms}
+          programs={allPrograms}
           onSelect={handleSelectProgram}
         />
       )}
