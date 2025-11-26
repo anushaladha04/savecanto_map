@@ -12,6 +12,9 @@
 import { Marker } from 'react-map-gl/maplibre';
 import PinMarker from './PinMarker';
 
+// ===== IMPORTS =====
+import type { BoundingBox } from '@/app/map/utils/geoUtils';
+
 // ===== TYPE DEFINITIONS =====
 
 // Represents a single program from the CSV
@@ -23,14 +26,11 @@ interface Program {
   longitude: number;   // Column 8 - X coordinate on map
 }
 
-// Represents a geographic region with boundaries          -------- need to change to match Shane's region format
+// Represents a geographic region with boundaries (uses Shane's BoundingBox format)
 interface Region {
   id: string;
   name: string;
-  minLng: number;      // westernmost boundary
-  maxLng: number;      // easternmost boundary
-  minLat: number;      // southernmost boundary
-  maxLat: number;      // northernmost boundary
+  boundingBox: BoundingBox;  // { north, south, east, west } from geoUtils
 }
 
 // Props that PinsLayer component receives
