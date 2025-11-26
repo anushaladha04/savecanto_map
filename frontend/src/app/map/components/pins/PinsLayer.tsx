@@ -39,16 +39,52 @@ interface PinsLayerProps {
 
 // ===== HELPER FUNCTIONS =====
 
+// Helper to extract lat/lng from program object (handles various field names)
+function getCoordinates(program: any): { lat: number | null; lng: number | null } {
+  const lat = program.latitude || program.Latitude || program.lat || program.Lat;
+  const lng = program.longitude || program.Longitude || program.lng || program.Lng || program.lon || program.Lon;
+  return { lat, lng };
+}
+
+// Helper to extract program type from program object (handles both converted and raw CSV data)
+function getProgramType(program: any): 'adults' | 'kids' | 'college' | 'other' {
+  // If already converted, use the type field
+  if (program.type) {
+    return program.type;
+  }
+  
+  // Otherwise, convert from Audience field
+  const audience = program.Audience || program.audience || '';
+  const normalized = audience.trim();
+  
+  if (normalized === 'Adults') {
+    return 'adults';
+  } else if (normalized === 'Children & Teens') {
+    return 'kids';
+  } else if (normalized === 'College / University') {
+    return 'college';
+  } else {
+    return 'other';
+  }
+}
+
 // ------------------------------ Place pins based on coordinates -----------------------------------------------
 // Checks if a program's coordinates fall within a region's boundaries
 // Uses Shane's BoundingBox format: { north, south, east, west }
-function isInRegion(program: Program, region: Region): boolean {
+function isInRegion(program: any, region: Region): boolean {
   const { boundingBox } = region;
+  const coords = getCoordinates(program);
+  
+  // If coordinates are missing, exclude this program
+  if (!coords.lat || !coords.lng) {
+    return false;
+  }
+  
   return (
-    program.longitude >= boundingBox.west &&   // check west boundary
-    program.longitude <= boundingBox.east &&   // check east boundary
-    program.latitude >= boundingBox.south &&   // check south boundary
-    program.latitude <= boundingBox.north      // check north boundary
+    coords.lng >= boundingBox.west &&   // check west boundary
+    coords.lng <= boundingBox.east &&   // check east boundary
+    coords.lat >= boundingBox.south &&   // check south boundary
+    coords.lat <= boundingBox.north      // check north boundary
   );
 }
 
@@ -60,38 +96,28 @@ const tooltipColorMap: Record<string, string> = {
   other: '#7DD48B',       // green
 };
 
-// Helper to extract lat/lng from program object (handles various field names)
-function getCoordinates(program: any): { lat: number | null; lng: number | null } {
-  const lat = program.latitude || program.Latitude || program.lat || program.Lat;
-  const lng = program.longitude || program.Longitude || program.lng || program.Lng || program.lon || program.Lon;
-  return { lat, lng };
-}
 
-// ===== MAIN COMPONENT =====
+
+
+// ===== MAIN COMPONENT =====          (pins are loaded when fnc PinsLayer is called and the selectedRegion is passed in)
 
 export default function PinsLayer({
   programs = [],
   selectedRegion,
   onPinClick,
 }: PinsLayerProps) {
+  // ------------------------------ Hover state for pin (program info preview) ------------------------------------------
   // Track which pin is currently hovered
   const [hoveredPinId, setHoveredPinId] = useState<string | null>(null);
 
-  // Determine if we're in region-filtering mode or simple mode
-  // If selectedRegion is provided and not null, we're in region mode (filter pins)
+  // Determine if we're in region mode (for UI styling) or simple mode
+  // If selectedRegion is provided and not null, we're in region mode (show all pins with tooltips)
   // If selectedRegion is null or undefined, we're in simple mode (show all pins)
   const isRegionMode = selectedRegion !== null && selectedRegion !== undefined;
   
-  // Filter programs based on mode
-  let displayPrograms: any[] = [];
-  
-  if (isRegionMode && selectedRegion) {
-    // Region mode: filter programs by region boundaries
-    displayPrograms = (programs as Program[]).filter((p) => isInRegion(p, selectedRegion));
-  } else {
-    // Simple mode: show ALL programs (initial view - no region selected)
-    displayPrograms = programs;
-  }
+  // Always show ALL programs when a region is selected (no filtering by bounding box)
+  // This allows users to pan around and see pins everywhere
+  const displayPrograms = programs;
 
   return (
     <>
@@ -108,6 +134,9 @@ export default function PinsLayer({
 
         // In region mode, use the full UI with tooltips
         if (isRegionMode && selectedRegion) {
+          const programType = getProgramType(program);
+          const programName = program.name || program.Name || 'Unnamed Program';
+          
           return (
             <Marker
               key={programId}
@@ -119,11 +148,11 @@ export default function PinsLayer({
               <div
                 onMouseEnter={() => setHoveredPinId(programId)}
                 onMouseLeave={() => setHoveredPinId(null)}
-                style={{ position: 'relative' }}
+                style={{ position: 'relative', cursor: 'pointer' }}
               >
                 {/* PinMarker is the visual icon (colored circle + point) */}
                 <PinMarker
-                  type={program.type}
+                  type={programType}
                   onLegacyClick={() => {
                     // Support both old and new onClick signatures
                     if (onPinClick) {
@@ -143,12 +172,13 @@ export default function PinsLayer({
                       top: '-25px',
                       right: '5px',
                       marginTop: '-10px',
+                      zIndex: 1000,
                     }}
                   >
                     {/* Tooltip box with chat bubble arrow on bottom-right */}
                     <div
                       style={{
-                        backgroundColor: tooltipColorMap[program.type] || tooltipColorMap.other,
+                        backgroundColor: tooltipColorMap[programType] || tooltipColorMap.other,
                         color: 'white',
                         padding: '6px 10px',
                         borderRadius: '3px',
@@ -158,7 +188,7 @@ export default function PinsLayer({
                         position: 'relative',
                       }}
                     >
-                      {program.name}
+                      {programName}
                       
                       {/* Arrow/pointer for chat bubble - bottom right */}
                       <div
@@ -170,7 +200,7 @@ export default function PinsLayer({
                           height: 0,
                           borderLeft: '5px solid transparent',
                           borderRight: '5px solid transparent',
-                          borderTop: `5px solid ${tooltipColorMap[program.type] || tooltipColorMap.other}`,
+                          borderTop: `5px solid ${tooltipColorMap[programType] || tooltipColorMap.other}`,
                         }}
                       />
                     </div>
@@ -182,12 +212,14 @@ export default function PinsLayer({
         }
 
         // Simple mode: use PinMarker with new interface (wraps Marker internally)
+        // Ensure program type is set correctly
+        const programType = getProgramType(program);
         return (
           <PinMarker
             key={programId}
             latitude={lat}
             longitude={lng}
-            program={program}
+            program={{ ...program, type: programType }}
             onClick={onPinClick}
           />
         );
