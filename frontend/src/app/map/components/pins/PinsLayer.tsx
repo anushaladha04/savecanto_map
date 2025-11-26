@@ -60,7 +60,10 @@ const tooltipColorMap: Record<string, string> = {
   other: '#7DD48B',       // green
 };
 
-// ===== MAIN COMPONENT =====
+
+
+
+// ===== MAIN COMPONENT =====          (pins are loaded when fnc PinsLayer is called and the selectedRegion is passed in)
 
 export default function PinsLayer({
   programs,
