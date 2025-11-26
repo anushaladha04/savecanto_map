@@ -24,7 +24,7 @@ interface CantoFilterProps {
   uniqueCities: string[];
 }
 
-const allCountryCodes = Object.keys(countries.getNames("en")); // all ISO alpha-2 codes
+const allCountryCodes = Object.keys(countries.getNames("en"));
 
 const CantoFilters = ({
   audienceFilter,
@@ -39,7 +39,7 @@ const CantoFilters = ({
   uniqueCities,
 }: CantoFilterProps) => {
   const AudienceOptions = ["Adults", "Children & Teens", "College / University"];
-
+  
   const filters = [
     { 
       label: "Age Group", 
@@ -94,13 +94,19 @@ const CantoFilters = ({
                   const countryName = getCountryName(option);
                   const flag = getCountryFlag(option);
                   return (
-                    <SelectItem key={option} value={countryName}>
+                    <SelectItem key={option} value={countryName} className="[&[data-state=checked]]:bg-slate-100 flex items-center justify-between px-2 py-1 rounded">
                       {countryName}
                       <span className="mr-2">{flag}</span>
                     </SelectItem>
                   );
                 }
-                return <SelectItem key={option} value={option}>{option}</SelectItem>;
+                return <SelectItem 
+                    key={option} 
+                    value={option}
+                    className="[&[data-state=checked]]:bg-slate-100 flex items-center justify-between px-2 py-1 rounded"
+                    >
+                      {option}
+                    </SelectItem>;
               })}
             </SelectContent>
           </Select>
