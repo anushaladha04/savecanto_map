@@ -2,10 +2,6 @@
 // renders pins for selected region
 // uses filtered programs + region zoom state
 
-// PinsLayer.tsx receives:
-// - selectedRegion (which region is selected)
-// - programs (array of programs in that region)
-// - onPinClick (callback when pin is clicked)
 
 'use client';
 
@@ -18,13 +14,13 @@ import type { BoundingBox } from '@/app/map/utils/geoUtils';
 
 // ===== TYPE DEFINITIONS =====
 
-// Represents a single program from the CSV
+// Represents a single program from the CSV -> a little confused on how to get input for this
 interface Program {
   id: string;
   name: string;        // Column 0 - program name
   type: 'adults' | 'kids' | 'college' | 'other';  // program category
   latitude: number;    // Column 7 - Y coordinate on map
-  longitude: number;   // Column 8 - X coordinate on map
+  longitude: number;   // Column 8 - X coordinate on map 
 }
 
 // Represents a geographic region with boundaries (uses Shane's BoundingBox format)
@@ -43,6 +39,7 @@ interface PinsLayerProps {
 
 // ===== HELPER FUNCTIONS =====
 
+// ------------------------------ Place pins based on coordinates -----------------------------------------------
 // Checks if a program's coordinates fall within a region's boundaries
 // Uses Shane's BoundingBox format: { north, south, east, west }
 function isInRegion(program: Program, region: Region): boolean {
@@ -70,6 +67,7 @@ export default function PinsLayer({
   selectedRegion,
   onPinClick,
 }: PinsLayerProps) {
+  // ------------------------------ Hover state for pin (program info preview) ------------------------------------------
   // Track which pin is currently hovered
   const [hoveredPinId, setHoveredPinId] = useState<string | null>(null);
 
@@ -98,7 +96,13 @@ export default function PinsLayer({
             {/* PinMarker is the visual icon (colored circle + point) */}
             <PinMarker
               type={program.type}                    // determines color
-              onClick={() => onPinClick?.(program)} // handle pin click
+              // -----------------------------------------Click behavior --------------------------------------------------
+              // When pin is clicked, call onPinClick callback with program data
+              // This triggers: zoom to pin level + open panel (handled elsewhere)
+              onClick={() => {
+                onPinClick?.(program); // Pass program data up
+                console.log('Pin clicked:', program);  // Log to console for testing
+              }}
             />
 
             {/* Tooltip showing program name on hover */}

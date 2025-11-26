@@ -8,11 +8,13 @@
 import React from 'react';
 
 // --------------------------PINS MARKER COMPONENT!! (haydn) ------------------------------
+// Build color pin icons (adults/kids/college/other)
+// Renders colored pin with matching icon for each program type
 
-// Define the possible program types
+
 type ProgramType = 'adults' | 'kids' | 'college' | 'other';
 
-// Define the shape and props that PinMarker component accepts
+// accepted components (shapes & props)
 interface PinMarkerProps {
   type: ProgramType;           // which program type (determines color)
   size?: number;               // optional pin size in pixels (default: 32)
@@ -20,7 +22,7 @@ interface PinMarkerProps {
   isHovered?: boolean;         // optional flag for hover styling
 }
 
-// Map each program type to its corresponding color hex value
+// map each program to color
 const colorMap: Record<ProgramType, string> = {
   adults: '#1FC6E3',           // blue
   kids: '#FFC300',             // yellow
@@ -44,6 +46,7 @@ export default function PinMarker({
       height={size + 16}
       viewBox="0 0 32 48"
       onClick={onClick}
+      // ------------------------  onClick triggers pin click handler -----------------------------------
       style={{ 
         cursor: onClick ? 'pointer' : 'default',
         filter: isHovered ? 'drop-shadow(0 0 8px rgba(0,0,0,0.4))' : 'none',
@@ -65,29 +68,37 @@ export default function PinMarker({
         </g>
       )}
       
-      {/* KIDS - Smiley face icon (yellow) */}
+      {/* KIDS - Baby face icon (yellow) */}
       {type === 'kids' && (
         <g>
-          {/* Face outline */}
-          <circle cx="16" cy="14" r="7" fill="none" stroke="white" strokeWidth="1" />
-          {/* Left eye */}
-          <circle cx="13" cy="11" r="1.5" fill="white" />
-          {/* Right eye */}
-          <circle cx="19" cy="11" r="1.5" fill="white" />
-          {/* Smile - curved line */}
-          <path d="M 13 14 Q 16 16 19 14" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+          {/* Face circle - rounder, chubby baby face */}
+          <circle cx="16" cy="13" r="7.5" fill="none" stroke="white" strokeWidth="1.2" />
+          
+          {/* Left cheek - cute blush */}
+          <circle cx="9" cy="14" r="1.5" fill="white" opacity="0.8" />
+          {/* Right cheek - cute blush */}
+          <circle cx="23" cy="14" r="1.5" fill="white" opacity="0.8" />
+          
+          {/* Left eye - bigger, round */}
+          <circle cx="12" cy="10" r="1.8" fill="white" />
+          {/* Right eye - bigger, round */}
+          <circle cx="20" cy="10" r="1.8" fill="white" />
+          
+          {/* Big happy smile - curved arc */}
+          <path d="M 12 14 Q 16 17 20 14" stroke="white" strokeWidth="1.8" fill="none" strokeLinecap="round" />
         </g>
       )}
       
       {/* COLLEGE - Apple icon (red) */}
       {type === 'college' && (
         <g>
-          {/* Apple body */}
-          <circle cx="16" cy="13" r="5" fill="white" />
-          {/* Apple stem */}
-          <rect x="15" y="6" width="2" height="4" fill="white" />
-          {/* Leaf */}
-          <ellipse cx="19" cy="8" rx="2.5" ry="1.5" fill="white" transform="rotate(-45 19 8)" />
+          {/* Apple outline - hollow shape, rounder and taller */}
+          <path d="M 16 7 Q 11 7 9 10.5 Q 8 12.5 9 14.5 Q 11 17 16 17 Q 21 17 23 14.5 Q 24 12.5 23 10.5 Q 21 7 16 7" 
+                fill="none" stroke="white" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+          {/* Apple stem - small line */}
+          <line x1="16" y1="6.5" x2="16" y2="4.5" stroke="white" strokeWidth="1" strokeLinecap="round" />
+          {/* Leaf - curved shape */}
+          <path d="M 18 5.5 Q 20.5 4.5 21.5 6" fill="none" stroke="white" strokeWidth="1" strokeLinecap="round" />
         </g>
       )}
       
