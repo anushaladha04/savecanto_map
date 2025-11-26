@@ -95,13 +95,19 @@ const CantoFilters: React.FC<Props> = ({
                   const countryName = getCountryName(option);
                   const flag = getCountryFlag(option);
                   return (
-                    <SelectItem key={option} value={countryName}>
+                    <SelectItem key={option} value={countryName} className="[&[data-state=checked]]:bg-slate-100 flex items-center justify-between px-2 py-1 rounded">
                       {countryName}
                       <span className="mr-2">{flag}</span>
                     </SelectItem>
                   );
                 }
-                return <SelectItem key={option} value={option}>{option}</SelectItem>;
+                return <SelectItem 
+                    key={option} 
+                    value={option}
+                    className="[&[data-state=checked]]:bg-slate-100 flex items-center justify-between px-2 py-1 rounded"
+                    >
+                      {option}
+                    </SelectItem>;
               })}
             </SelectContent>
           </Select>
