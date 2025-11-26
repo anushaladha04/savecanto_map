@@ -18,40 +18,40 @@ export function SelectedPrograms({
   onSelect,
 }: SelectedProgramsProps) {
   return (
-    <div className="px-6 pb-8">
-      <div className="text-lg font-medium text-gray-900 mb-4">Results for</div>
+    <div className="px-4 pb-6">
+      <div className="text-sm font-medium text-gray-900 mb-2">Results for</div>
 
       {programs.length === 0 ? (
-        <div className="text-sm text-gray-500">No programs selected.</div>
+        <div className="text-xs text-gray-500">No programs selected.</div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {programs.map((p) => (
             <div
               key={p.id ?? p.name}
-              className="w-full bg-[#F6F7FA] text-left p-4 rounded-lg focus-within:ring-2 flex flex-col gap-3"
+              className="w-full bg-[#F6F7FA] text-left p-2 focus-within:ring-2 flex flex-col gap-1"
             >
               <div className="flex items-center justify-between">
-                <div className="text-base font-semibold text-black truncate">
+                <div className="text-sm font-semibold text-black truncate">
                   {p.name}
                 </div>
-                <div className="text-gray-300 text-xl select-none">›</div>
+                <div className="text-gray-300 text-xs select-none">›</div>
               </div>
 
-              <div className="mt-1 text-sm text-gray-600 flex items-start gap-2">
+              <div className="text-xs text-gray-600 flex items-start gap-1.5">
                 <MapPin
-                  className="w-4 h-4 text-gray-500 flex-shrink-0 mt-1"
+                  className="w-4 h-4 text-gray-500 flex-shrink-0 mt-0.5"
                   aria-hidden
                 />
-                <div className="flex-1 whitespace-normal break-words">
+                <div className="flex-1 max-w-[60%]">
                   {p.address ?? "No Address available"}
                 </div>
               </div>
 
-              <div className="mt-4 flex justify-end">
+              <div className="mt-2 flex justify-end">
                 <button
                   type="button"
                   onClick={() => onSelect?.(p)}
-                  className="bg-black text-white text-sm font-medium px-3 py-1.5 rounded-md hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-black"
+                  className="bg-black text-white text-xs font-medium px-2.5 py-1.5 rounded hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-black"
                 >
                   View More →
                 </button>

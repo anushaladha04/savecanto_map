@@ -50,6 +50,9 @@
   font-style: normal;
   font-weight: 400;
   letter-spacing: normal;
+  max-width: 340px;
+  border-radius: 0%;
+  box-shadow: none;
 }
 
 .side-panel-body {

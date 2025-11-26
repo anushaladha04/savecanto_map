@@ -30,8 +30,10 @@ export function SidePanel({ isOpen, onClose, programId }: SidePanelProps) {
       email: "ccbachicago@comcast.net",
       phoneNumber: "(312) 555-0100",
       category: "Children & Teens",
+      level: "Advanced",
       website: "https://ccba.example.org",
-      address: "123 Fake Rd, Apt #1, Chicago, IL 60007, USA",
+      address:
+        "123 Very Much Fake And Not Real Rd, Apt #1, Chicago, IL 60007, USA",
     },
     {
       id: "bowls-for-all",
@@ -40,6 +42,7 @@ export function SidePanel({ isOpen, onClose, programId }: SidePanelProps) {
       email: "info@bowlsforall.org",
       phoneNumber: "(847) 555-0123",
       category: "Community",
+      level: "Advanced",
       website: "https://bowls.example.org",
       address: "234 Fake Rd, Apt #1, Evanston, IL 60007, USA",
     },
@@ -50,6 +53,7 @@ export function SidePanel({ isOpen, onClose, programId }: SidePanelProps) {
       email: "contact@literacylift.org",
       phoneNumber: "(708) 555-0456",
       category: "Education",
+      level: "Beginner",
       website: "https://literacy.example.org",
     },
     {
@@ -199,14 +203,14 @@ export function SidePanel({ isOpen, onClose, programId }: SidePanelProps) {
       aria-hidden={!isOpen}
     >
       {/* top-right close */}
-      <div className="flex justify-end p-4">
+      <div className="flex justify-end p-2">
         <button
           aria-label="Close panel"
           onClick={() => {
             setSelectedProgram(null);
             onClose();
           }}
-          className="text-2xl leading-none px-3 py-1 rounded-md hover:bg-gray-100"
+          className="text-2xl leading-none px-1 py-0.5 rounded-md hover:bg-gray-100"
         >
           ×
         </button>

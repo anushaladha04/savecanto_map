@@ -2,12 +2,20 @@
 
 import React from "react";
 import type { ProgramDetails } from "./types";
+import { MapPin, Globe, Mail } from "lucide-react";
 
 interface AdvancedDetailsProps {
   program?: ProgramDetails | null;
   isOpen?: boolean;
   onClose?: () => void;
 }
+
+const colorKey: { [key: string]: string } = {
+  Adults: "#1FC6E3",
+  "Children & Teens": "#FFC300",
+  "College & University": "#E60001",
+  Other: "#7DD48B",
+};
 
 export function AdvancedDetails({
   program = null,
@@ -24,13 +32,14 @@ export function AdvancedDetails({
     phoneNumber: "",
     category: "",
     website: "",
+    level: "",
   };
 
   return (
     <aside
       className={`side-panel ${
         isOpen ? "open" : ""
-      } absolute left-0 top-0 bottom-0 h-full z-50 w-full max-w-[420px] bg-white rounded-xl shadow-2xl overflow-y-auto`}
+      } absolute left-0 top-0 bottom-0 h-full z-50 rounded-none bg-white overflow-y-auto`}
       role="dialog"
       aria-hidden={!isOpen}
     >
@@ -47,38 +56,64 @@ export function AdvancedDetails({
 
       <div className="side-panel">
         <div className="px-6 pb-8">
-          {/* category badge */}
-          {visibleProgram?.category && (
-            <div
-              className="inline-block text-white px-2 py-1 rounded-sm"
-              style={
-                {
-                  backgroundColor: "#E57520",
-                  fontWeight: 400,
-                  fontSize: "19.11px",
-                  // keep non-standard rule as in original
-                  ["leading-trim"]: "none",
-                } as any
-              }
-            >
-              {visibleProgram.category}
-            </div>
-          )}
-
           <div className="side-panel-body">
-            {/* brief contact lines */}
-            <div className="mt-4 text-black text-2xl font-semibold leading-tight">
+            <div className="text-black text-xl font-semibold leading-tight">
               {visibleProgram?.name ?? "Program details"}
             </div>
-            <div className="text-gray-700 mt-2">
-              {visibleProgram?.city && (
-                <div className="text-lg">{visibleProgram.city}</div>
+            <div className="flex gap-2 items-start">
+              {visibleProgram?.category && (
+                <div
+                  className="mt-3 inline-block text-white px-3 py-0.5 rounded-xl text-sm"
+                  style={{
+                    backgroundColor:
+                      colorKey[visibleProgram?.category] ?? "#000000",
+                    border: "2px solid transparent",
+                  }}
+                >
+                  {visibleProgram.category}
+                </div>
+              )}
+              {visibleProgram.level && visibleProgram.category && (
+                <div
+                  className="mt-3 inline-block text-white px-3 py-0.5 rounded-xl text-sm"
+                  style={{
+                    color: colorKey[visibleProgram.category] ?? "#000000",
+                    border: `2px solid ${
+                      colorKey[visibleProgram.category] ?? "#000000"
+                    }`,
+                  }}
+                >
+                  {visibleProgram.level}
+                </div>
+              )}
+            </div>
+            <div className="text-gray-700 mt-3 space-y-2">
+              {visibleProgram?.address && (
+                <div className="flex items-center gap-2">
+                  <MapPin
+                    className="w-4 h-4 flex-shrink-0 text-gray-500"
+                    aria-hidden
+                  />
+                  <div className="text-sm">{visibleProgram.address}</div>
+                </div>
+              )}
+              {visibleProgram?.website && (
+                <div className="flex items-center gap-2">
+                  <Globe
+                    className="w-4 h-4 flex-shrink-0 text-gray-500"
+                    aria-hidden
+                  />
+                  <div className="text-sm">{visibleProgram.website}</div>
+                </div>
               )}
               {visibleProgram?.email && (
-                <div className="text-base">{visibleProgram.email}</div>
-              )}
-              {visibleProgram?.phoneNumber && (
-                <div className="text-base">{visibleProgram.phoneNumber}</div>
+                <div className="flex items-center gap-2">
+                  <Mail
+                    className="w-4 h-4 flex-shrink-0 text-gray-500"
+                    aria-hidden
+                  />
+                  <div className="text-sm">{visibleProgram.email}</div>
+                </div>
               )}
             </div>
           </div>
