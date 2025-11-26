@@ -36,8 +36,11 @@ export function convertCsvRowToProgram(row: CsvRow, index: number): Program | nu
     return null;
   }
   
+  // Use row number (index) as the unique ID
+  // Note: index is 0-based, so row 1 in the CSV = index 0
   return {
-    id: `program-${index}-${row.Name?.replace(/\s+/g, '-') || index}`,
+    id: `csv-${index}`, // Unique ID based on row number
+    csvIndex: index, // Store the CSV row number (0-based index)
     name: row.Name || 'Unnamed Program',
     type: mapAudienceToPinType(row.Audience),
     latitude: lat,

@@ -12,6 +12,9 @@ const SearchBar = ({ value, onChange }: SearchBarProps) => {
     <div className="relative w-[400px]">
       <Input
         type="text"
+        id="search-input"
+        name="search"
+        autoComplete="off"
         placeholder="Search"
         value={value}
         onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}

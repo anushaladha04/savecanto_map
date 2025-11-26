@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { CsvRow } from '../../types/types';
+import { CsvRow } from './types';
 import { getCountryName, getCountryFlag, allCountryCodes } from '../../utils/filterUtils';
 
 interface Props {
@@ -82,10 +82,31 @@ const CantoFilters: React.FC<Props> = ({
 
   return (
     <div className="flex gap-2">
-      {filters.map(({ label, value, setValue, options, placeholder, allLabel, isCountry }) => (
+      {filters.map(({ label, value, setValue, options, placeholder, allLabel, isCountry }) => {
+        // Generate a unique name/id based on the label
+        const fieldName = label.toLowerCase().replace(/\s+/g, '-').replace(/\//g, '-');
+        const fieldId = `filter-${fieldName}`;
+        
+        // Map field types to appropriate autocomplete values
+        const autocompleteMap: Record<string, string> = {
+          'age-group': 'off',
+          'country': 'country-name',
+          'state-province': 'address-level1',
+          'city': 'address-level2',
+        };
+        const autocompleteValue = autocompleteMap[fieldName] || 'off';
+        
+        return (
         <div key={label} className="relative">
-          <Select value={value} onValueChange={setValue}>
-            <SelectTrigger className={`w-[200px] border-slate-300 [&>span]:text-black ${value && value !== "all" ? "[&>svg]:hidden" : ""}`}>
+          <Select 
+            value={value} 
+            onValueChange={setValue} 
+            name={fieldName}
+          >
+            <SelectTrigger 
+              id={fieldId}
+              className={`w-[200px] border-slate-300 [&>span]:text-black ${value && value !== "all" ? "[&>svg]:hidden" : ""}`}
+            >
               <SelectValue placeholder={placeholder} />
             </SelectTrigger>
             <SelectContent className="bg-background max-h-[300px] overflow-y-auto border-slate-100">
@@ -95,13 +116,19 @@ const CantoFilters: React.FC<Props> = ({
                   const countryName = getCountryName(option);
                   const flag = getCountryFlag(option);
                   return (
-                    <SelectItem key={option} value={countryName}>
+                    <SelectItem key={option} value={countryName} className="[&[data-state=checked]]:bg-slate-100 flex items-center justify-between px-2 py-1 rounded">
                       {countryName}
                       <span className="mr-2">{flag}</span>
                     </SelectItem>
                   );
                 }
-                return <SelectItem key={option} value={option}>{option}</SelectItem>;
+                return <SelectItem 
+                    key={option} 
+                    value={option}
+                    className="[&[data-state=checked]]:bg-slate-100 flex items-center justify-between px-2 py-1 rounded"
+                    >
+                      {option}
+                    </SelectItem>;
               })}
             </SelectContent>
           </Select>
@@ -117,7 +144,8 @@ const CantoFilters: React.FC<Props> = ({
             </button>
           )}
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 };

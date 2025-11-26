@@ -26,15 +26,15 @@ export default function ZoomControls({ mapRef, zoomIn, zoomOut }: ZoomControlsPr
     >
       <button
         onClick={zoomIn}
-        className="bg-white hover:bg-gray-100 text-gray-800 font-bold py-2 px-4 rounded shadow-lg border border-gray-300"
-        style={{ width: '40px', height: '40px', fontSize: '20px' }}
+        className="bg-white hover:bg-gray-100 text-gray-800 font-bold rounded shadow-lg border border-gray-300 flex items-center justify-center"
+        style={{ width: '40px', height: '40px', fontSize: '20px', padding: 0 }}
       >
         +
       </button>
       <button
         onClick={zoomOut}
-        className="bg-white hover:bg-gray-100 text-gray-800 font-bold py-2 px-4 rounded shadow-lg border border-gray-300"
-        style={{ width: '40px', height: '40px', fontSize: '20px' }}
+        className="bg-white hover:bg-gray-100 text-gray-800 font-bold rounded shadow-lg border border-gray-300 flex items-center justify-center"
+        style={{ width: '40px', height: '40px', fontSize: '20px', padding: 0 }}
       >
         −
       </button>

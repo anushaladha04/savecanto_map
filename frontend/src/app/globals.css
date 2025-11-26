@@ -50,7 +50,7 @@
   font-style: normal;
   font-weight: 400;
   letter-spacing: normal;
-  max-width: 340px;
+  /* max-width is now controlled via Tailwind classes in the component */
   border-radius: 0%;
   box-shadow: none;
 }

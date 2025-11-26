@@ -4,11 +4,13 @@
 
 'use client';
 
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useMemo, useCallback } from 'react';
 import { MapRef } from 'react-map-gl/maplibre';
 import BaseMap from './BaseMap';
 import ClusterLayer from './clusters/ClusterLayer';
 import PinsLayer from './pins/PinsLayer';
+import ZoomControls from './ZoomControls';
+import SaveCantoIcon from './SaveCantoIcon';
 import { useZoom } from '../hooks/useZoom';
 import { RegionCluster } from '../utils/clusterUtils';
 import { loadPrograms } from '../utils/loadPrograms';
@@ -26,13 +28,15 @@ interface Region {
 
 interface MapContainerProps {
   programs?: any[]; // Optional programs prop (for testing/backward compatibility)
+  onPinClick?: (program: Program | any) => void; // Callback when a pin is clicked
 }
 
-export default function MapContainer({ programs: externalPrograms }: MapContainerProps = {}) {
+export default function MapContainer({ programs: externalPrograms, onPinClick }: MapContainerProps = {}) {
   const mapRef = useRef<MapRef | null>(null);
   const [programs, setPrograms] = useState<Program[]>([]);
   const [selectedRegion, setSelectedRegion] = useState<Region | null>(null);
   const [loading, setLoading] = useState(true);
+  const lastOpenedProgramRef = useRef<string | null>(null);
   
   // Get map dimensions (can be made dynamic based on container size)
   const mapWidth = typeof window !== 'undefined' ? window.innerWidth * 0.9 : 800;
@@ -43,6 +47,8 @@ export default function MapContainer({ programs: externalPrograms }: MapContaine
     zoomToRegion, 
     resetView,
     zoomToCoordinates,
+    zoomIn,
+    zoomOutControl,
   } = useZoom({
     mapRef,
     mapWidth,
@@ -106,13 +112,18 @@ export default function MapContainer({ programs: externalPrograms }: MapContaine
     setSelectedRegion(null); // Clear selected region to show clusters again
   };
 
-  // Handle pin click - zoom to pin and open panel
+  // Handle pin click - zoom to pin and notify parent
   const handlePinClick = (program: Program | any, latitude?: number, longitude?: number) => {
+    // Guard against null/undefined program
+    if (!program) {
+      console.warn('handlePinClick called with null/undefined program');
+      return;
+    }
+    
     // If coordinates are provided (new interface), use them
     if (latitude !== undefined && longitude !== undefined) {
       // Zoom to pin
       zoomToCoordinates(longitude, latitude, 14);
-      console.log('Pin clicked:', program);
     } else {
       // Old interface - program should have coordinates
       const lat = program.latitude || program.Latitude || program.lat || program.Lat;
@@ -120,20 +131,100 @@ export default function MapContainer({ programs: externalPrograms }: MapContaine
       
       if (lat && lng) {
         zoomToCoordinates(lng, lat, 14);
-        console.log('Pin clicked:', program);
       } else {
         console.warn('Pin clicked but no coordinates found:', program);
       }
     }
+    
+    // Notify parent component to open side panel
+    if (onPinClick) {
+      const programId = program.id || program.name || program.Name;
+      lastOpenedProgramRef.current = programId;
+      console.log('📍 MapContainer: Calling onPinClick with program:', {
+        id: program.id,
+        csvIndex: program.csvIndex,
+        name: program.name || program.Name
+      });
+      onPinClick(program);
+    } else {
+      console.log('❌ MapContainer: onPinClick handler is not available');
+    }
   };
 
   // Determine which programs to display
-  const displayPrograms = (externalPrograms && externalPrograms.length > 0) 
-    ? externalPrograms 
-    : programs;
+  // Always use the converted programs from state, not raw externalPrograms
+  const displayPrograms = useMemo(() => {
+    return programs;
+  }, [programs]);
+
+  // Helper function to calculate distance between two coordinates (Haversine formula)
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371; // Earth's radius in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+
+  // Handle map move/zoom end - detect micro zoom to a program
+  const handleMoveEnd = useCallback((center: [number, number], zoom: number) => {
+    // Only trigger for micro zoom (zoom >= 14)
+    if (zoom < 14) {
+      return;
+    }
+    
+    if (!onPinClick) {
+      return;
+    }
+    
+    // Use programs from state (which should always be available)
+    const programsToCheck = programs.length > 0 ? programs : displayPrograms;
+    
+    if (programsToCheck.length === 0) {
+      return;
+    }
+
+    const [centerLng, centerLat] = center;
+    const thresholdKm = 1.0; // 1 km threshold for matching
+
+    // Find the nearest program to the map center
+    let nearestProgram: any = null;
+    let minDistance = Infinity;
+
+    programsToCheck.forEach((program: any) => {
+      const programLat = program.latitude || program.Latitude || program.lat || program.Lat;
+      const programLng = program.longitude || program.Longitude || program.lng || program.Lng || program.lon || program.Lon;
+
+      if (programLat && programLng && !isNaN(programLat) && !isNaN(programLng)) {
+        const distance = calculateDistance(centerLat, centerLng, programLat, programLng);
+        if (distance < minDistance && distance < thresholdKm) {
+          minDistance = distance;
+          nearestProgram = program;
+        }
+      }
+    });
+
+    // If we found a nearby program, open the side panel
+    if (nearestProgram && onPinClick) {
+      const programId = nearestProgram.id || nearestProgram.name || nearestProgram.Name;
+      // Only open if it's a different program than the last one we opened
+      if (programId !== lastOpenedProgramRef.current) {
+        lastOpenedProgramRef.current = programId;
+        console.log('🔍 Micro zoom: Opening side panel for program:', nearestProgram.name || nearestProgram.Name);
+        onPinClick(nearestProgram);
+      }
+    } else {
+      // Reset if we're not near any program
+      lastOpenedProgramRef.current = null;
+    }
+  }, [onPinClick, programs, displayPrograms]);
 
   return (
-    <BaseMap mapRef={mapRef}>
+    <BaseMap mapRef={mapRef} onMoveEnd={handleMoveEnd}>
       {/* Hide clusters when a region is selected */}
       <ClusterLayer 
         onRegionSelect={handleRegionSelect} 
@@ -149,7 +240,13 @@ export default function MapContainer({ programs: externalPrograms }: MapContaine
         />
       )}
       
-      {/* Zoom controls and SaveCanto icon - will be added when hooks are merged */}
+      {/* Zoom controls and SaveCanto icon */}
+      <ZoomControls 
+        mapRef={mapRef}
+        zoomIn={zoomIn}
+        zoomOut={zoomOutControl}
+      />
+      <SaveCantoIcon />
     </BaseMap>
   );
 }

@@ -17,6 +17,7 @@ interface BaseMapProps {
     latitude: number;
     zoom: number;
   };
+  onMoveEnd?: (center: [number, number], zoom: number) => void;
 }
 
 const VOYAGER_STYLE_URL =
@@ -30,6 +31,7 @@ export default function BaseMap({
     latitude: 20,
     zoom: 1.5,
   },
+  onMoveEnd,
 }: BaseMapProps) {
   const mapStyle = useMemo(() => VOYAGER_STYLE_URL, []);
   return (
@@ -44,6 +46,11 @@ export default function BaseMap({
       touchZoomRotate={true}
       attributionControl={{ compact: true }}
       renderWorldCopies={false}
+      onMoveEnd={(evt) => {
+        if (onMoveEnd && evt.viewState) {
+          onMoveEnd([evt.viewState.longitude, evt.viewState.latitude], evt.viewState.zoom);
+        }
+      }}
     >
       {children}
     </Map>

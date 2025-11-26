@@ -19,7 +19,8 @@ export interface Program {
   name: string;        // Column 0 - program name
   type: 'adults' | 'kids' | 'college' | 'other';  // program category
   latitude: number;    // Column 7 - Y coordinate on map
-  longitude: number;   // Column 8 - X coordinate on map 
+  longitude: number;   // Column 8 - X coordinate on map
+  csvIndex?: number;   // CSV row number (0-based index) - used as unique identifier
 }
 
 // Represents a geographic region with boundaries (uses Shane's BoundingBox format)
@@ -149,16 +150,22 @@ export default function PinsLayer({
                 onMouseEnter={() => setHoveredPinId(programId)}
                 onMouseLeave={() => setHoveredPinId(null)}
                 style={{ position: 'relative', cursor: 'pointer' }}
+                onClick={() => {
+                  if (onPinClick) {
+                    console.log('🖱️ PinsLayer: Pin clicked, calling onPinClick with program:', {
+                      id: program.id,
+                      csvIndex: program.csvIndex,
+                      name: program.name || program.Name
+                    });
+                    onPinClick(program, lat, lng);
+                  } else {
+                    console.log('❌ PinsLayer: onPinClick handler not available');
+                  }
+                }}
               >
                 {/* PinMarker is the visual icon (colored circle + point) */}
                 <PinMarker
                   type={programType}
-                  onLegacyClick={() => {
-                    // Support both old and new onClick signatures
-                    if (onPinClick) {
-                      onPinClick(program, lat, lng);
-                    }
-                  }}
                   isHovered={hoveredPinId === programId}
                   size={32}
                 />

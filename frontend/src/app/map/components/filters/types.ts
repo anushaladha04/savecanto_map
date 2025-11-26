@@ -7,8 +7,9 @@ export interface CsvRow {
   Country: string;
   Address: string;
   Website: string;
+  Email: string;
+  "Phone Number": string;
 }
-
 // Filter values for the dataset
 export interface Filters {
   searchTerm: string;

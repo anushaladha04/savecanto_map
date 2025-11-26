@@ -14,7 +14,7 @@ import { Marker } from 'react-map-gl/maplibre';
 
 type ProgramType = 'adults' | 'kids' | 'college' | 'other';
 
-// Map each program to color
+// map each program to color
 const colorMap: Record<ProgramType, string> = {
   adults: '#1FC6E3',           // blue
   kids: '#FFC300',             // yellow
