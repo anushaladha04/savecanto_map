@@ -1,56 +1,15 @@
 'use client';
 
-import { useRef, useState } from 'react';
-import { MapRef } from 'react-map-gl/maplibre';
-import BaseMap from '../map/components/BaseMap';
-import PinsLayer from '../map/components/pins/PinsLayer';
+import { useState } from 'react';
 import PinMarker from '@/app/map/components/pins/PinMarker';
 
-// Mock data
-const mockPrograms = [
-  {
-    id: '1',
-    name: 'NYC Adult',
-    type: 'adults' as const,
-    latitude: 40.7128,
-    longitude: -74.0060,
-  },
-  {
-    id: '2',
-    name: 'NYC Kids',
-    type: 'kids' as const,
-    latitude: 40.7580,
-    longitude: -73.9855,
-  },
-  {
-    id: '3',
-    name: 'Boston College',
-    type: 'college' as const,
-    latitude: 42.3601,
-    longitude: -71.0589,
-  },
-  {
-    id: '4',
-    name: 'LA Other',
-    type: 'other' as const,
-    latitude: 34.0522,
-    longitude: -118.2437,
-  },
-];
-
-const mockRegion = {
-  id: 'north-america',
-  name: 'North America',
-  minLng: -130,
-  maxLng: -60,
-  minLat: 25,
-  maxLat: 50,
-};
-
-export default function Home() {
-  const mapRef = useRef<MapRef>(null);
+// ===== STATE =====
+export default function TestPins() {
+  // Track which pin is currently being hovered (null if none)
   const [hoveredPin, setHoveredPin] = useState<string | null>(null);
 
+  // ===== TEST DATA =====
+  // Mock pin data for testing all 4 program types
   const pins = [
     { id: '1', type: 'adults' as const, label: 'Adults' },
     { id: '2', type: 'kids' as const, label: 'Kids' },
@@ -59,37 +18,39 @@ export default function Home() {
   ];
 
   return (
-    <main className="min-h-screen">
-      <div className="w-full h-screen">
-        <BaseMap mapRef={mapRef}>
-          <PinsLayer
-            programs={mockPrograms}
-            selectedRegion={mockRegion}
-            onPinClick={(program) => console.log('Clicked:', program)}
-          />
-        </BaseMap>
-      </div>
-      <div className="p-10 bg-gray-50">
-        <h1 className="text-3xl font-bold mb-8">Pin Icon Test</h1>
+    <div className="p-10 bg-gray-50 min-h-screen">
+      <h1 className="text-3xl font-bold mb-8">Pin Icon Test (Hover Effects)</h1>
+      
+      {/* ===== PINS CONTAINER ===== */}
+      {/* Container that holds all test pins in a row */}
+      <div className="flex gap-12 items-center">
         
-        <div className="flex gap-12 items-center">
-          {pins.map((pin) => (
-            <div
-              key={pin.id}
-              className="flex flex-col items-center gap-2"
-              onMouseEnter={() => setHoveredPin(pin.id)}
-              onMouseLeave={() => setHoveredPin(null)}
-            >
-              <PinMarker
-                type={pin.type}
-                size={48}
-                isHovered={hoveredPin === pin.id}
-              />
-              <p>{pin.label}</p>
-            </div>
-          ))}
-        </div>
+        {/* ===== PIN LOOP ===== */}
+        {/* Loop through each pin and render it */}
+        {pins.map((pin) => (
+          <div
+            key={pin.id}
+            className="flex flex-col items-center gap-2"
+            // ===== HOVER HANDLERS =====
+            // When mouse enters this pin area, set it as the hovered pin
+            onMouseEnter={() => setHoveredPin(pin.id)}
+            // When mouse leaves this pin area, clear the hovered state
+            onMouseLeave={() => setHoveredPin(null)}
+          >
+            {/* ===== PIN MARKER COMPONENT ===== */}
+            {/* Render the visual pin icon */}
+            <PinMarker
+              type={pin.type}                      // determines pin color (adults/kids/college/other)
+              size={48}                            // size in pixels
+              isHovered={hoveredPin === pin.id}   // pass hover state - true if this pin is being hovered
+            />
+            
+            {/* ===== LABEL ===== */}
+            {/* Display text label under the pin */}
+            <p>{pin.label}</p>
+          </div>
+        ))}
       </div>
-    </main>
+    </div>
   );
 }

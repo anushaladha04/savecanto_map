@@ -9,6 +9,7 @@
 
 'use client';
 
+import { useState } from 'react';
 import { Marker } from 'react-map-gl/maplibre';
 import PinMarker from './PinMarker';
 
@@ -43,14 +44,24 @@ interface PinsLayerProps {
 // ===== HELPER FUNCTIONS =====
 
 // Checks if a program's coordinates fall within a region's boundaries
+// Uses Shane's BoundingBox format: { north, south, east, west }
 function isInRegion(program: Program, region: Region): boolean {
+  const { boundingBox } = region;
   return (
-    program.longitude >= region.minLng &&  // check west boundary
-    program.longitude <= region.maxLng &&  // check east boundary
-    program.latitude >= region.minLat &&   // check south boundary
-    program.latitude <= region.maxLat      // check north boundary
+    program.longitude >= boundingBox.west &&   // check west boundary
+    program.longitude <= boundingBox.east &&   // check east boundary
+    program.latitude >= boundingBox.south &&   // check south boundary
+    program.latitude <= boundingBox.north      // check north boundary
   );
 }
+
+// Map program type to tooltip color
+const tooltipColorMap: Record<string, string> = {
+  adults: '#1FC6E3',      // blue
+  kids: '#FFC300',        // yellow
+  college: '#E60001',     // red
+  other: '#7DD48B',       // green
+};
 
 // ===== MAIN COMPONENT =====
 
@@ -59,6 +70,9 @@ export default function PinsLayer({
   selectedRegion,
   onPinClick,
 }: PinsLayerProps) {
+  // Track which pin is currently hovered
+  const [hoveredPinId, setHoveredPinId] = useState<string | null>(null);
+
   // Filter programs: only keep ones that are in the selected region
   // If no region is selected, show no pins (empty array)
   const regionPrograms = selectedRegion
@@ -69,18 +83,67 @@ export default function PinsLayer({
     <>
       {/* Loop through filtered programs and render a pin for each */}
       {regionPrograms.map((program) => (
-        // Marker component positions the pin on the map at coordinates
         <Marker
           key={program.id}
           longitude={program.longitude}  // X position on map
           latitude={program.latitude}    // Y position on map
           anchor="bottom"                // pin tip points to the location
         >
-          {/* PinMarker is the visual icon (colored circle + point) */}
-          <PinMarker
-            type={program.type}                    // determines color
-            onClick={() => onPinClick?.(program)} // handle pin click
-          />
+          {/* Pin wrapper with hover handlers */}
+          <div
+            onMouseEnter={() => setHoveredPinId(program.id)}
+            onMouseLeave={() => setHoveredPinId(null)}
+            style={{ position: 'relative' }}
+          >
+            {/* PinMarker is the visual icon (colored circle + point) */}
+            <PinMarker
+              type={program.type}                    // determines color
+              onClick={() => onPinClick?.(program)} // handle pin click
+            />
+
+            {/* Tooltip showing program name on hover */}
+            {hoveredPinId === program.id && (
+              <div
+                style={{
+                  position: 'absolute',
+                  pointerEvents: 'none',
+                  top: '-25px',
+                  right: '5px',
+                  marginTop: '-10px',
+                }}
+              >
+                {/* Tooltip box with chat bubble arrow on bottom-right */}
+                <div
+                  style={{
+                    backgroundColor: tooltipColorMap[program.type],
+                    color: 'white',
+                    padding: '6px 10px',
+                    borderRadius: '3px',
+                    fontSize: '11px',
+                    fontWeight: 500,
+                    whiteSpace: 'nowrap',
+                    position: 'relative',
+                  }}
+                >
+                  {program.name}
+                  
+                  {/* Arrow/pointer for chat bubble - bottom right */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      bottom: '-4px',
+                      right: '8px',
+                      width: 0,
+                      height: 0,
+                      borderLeft: '5px solid transparent',
+                      borderRight: '5px solid transparent',
+                      borderTop: `5px solid ${tooltipColorMap[program.type]}`,
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
         </Marker>
       ))}
     </>
