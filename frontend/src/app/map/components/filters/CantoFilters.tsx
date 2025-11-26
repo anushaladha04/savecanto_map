@@ -39,32 +39,57 @@ const CantoFilters: React.FC<Props> = ({
     [data]
   );
 
-  const uniqueCountries = useMemo(() =>
-    Array.from(new Set(data.map(row => row.Country).filter(Boolean)))
-      .map(code => getCountryName(code))
-      .sort(),
-    [data]
-  );
-
   const AudienceOptions = ["Adults", "Children & Teens", "College / University"];
 
   const filters = [
-    { label: "Age Group", value: audienceFilter, setValue: setAudienceFilter, options: AudienceOptions, placeholder: "Select an Audience", isCountry: false },
-    { label: "Country", value: countryFilter, setValue: setCountryFilter, options: allCountryCodes, placeholder: "Country", isCountry: true },
-    { label: "State/Province", value: provinceFilter, setValue: setProvinceFilter, options: uniqueProvinces, placeholder: "State/Province", isCountry: false },
-    { label: "City", value: cityFilter, setValue: setCityFilter, options: uniqueCities, placeholder: "City", isCountry: false },
+    { 
+      label: "Age Group", 
+      value: audienceFilter, 
+      setValue: setAudienceFilter, 
+      options: AudienceOptions, 
+      placeholder: "Select an Audience",
+      allLabel: "All",
+      isCountry: false
+    },
+    { 
+      label: "Country", 
+      value: countryFilter, 
+      setValue: setCountryFilter, 
+      options: allCountryCodes, 
+      placeholder: "Select a Country",
+      allLabel: "All",
+      isCountry: true
+    },
+    { 
+      label: "State/Province", 
+      value: provinceFilter, 
+      setValue: setProvinceFilter, 
+      options: uniqueProvinces || [], 
+      placeholder: "Select a State/Province",
+      allLabel: "All",
+      isCountry: false
+    },
+    { 
+      label: "City", 
+      value: cityFilter, 
+      setValue: setCityFilter, 
+      options: uniqueCities || [], 
+      placeholder: "Select a City",
+      allLabel: "All",
+      isCountry: false
+    },
   ];
 
   return (
-    <div className="flex gap-2 flex-wrap">
-      {filters.map(({ label, value, setValue, options, placeholder, isCountry }) => (
-        <div key={label}>
+    <div className="flex gap-2">
+      {filters.map(({ label, value, setValue, options, placeholder, allLabel, isCountry }) => (
+        <div key={label} className="relative">
           <Select value={value} onValueChange={setValue}>
-            <SelectTrigger className="w-[200px] border-slate-300">
+            <SelectTrigger className={`w-[200px] border-slate-300 [&>span]:text-black ${value && value !== "all" ? "[&>svg]:hidden" : ""}`}>
               <SelectValue placeholder={placeholder} />
             </SelectTrigger>
             <SelectContent className="bg-background max-h-[300px] overflow-y-auto border-slate-100">
-              <SelectItem value="all">{placeholder}</SelectItem>
+              <SelectItem value="all">{allLabel}</SelectItem>
               {options.map(option => {
                 if (isCountry) {
                   const countryName = getCountryName(option);
@@ -80,6 +105,17 @@ const CantoFilters: React.FC<Props> = ({
               })}
             </SelectContent>
           </Select>
+          {value && value !== "all" && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setValue('');
+              }}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 z-10 p-1"
+            >
+              ✕
+            </button>
+          )}
         </div>
       ))}
     </div>

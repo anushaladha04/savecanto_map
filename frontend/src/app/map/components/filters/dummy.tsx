@@ -32,13 +32,13 @@ const Dummy = () => {
 
   // Use the filtering hook
   const {
-    audience,
+    audienceFilter,
     setAudience,
-    province,
+    provinceFilter,
     setProvince,
-    city,
+    cityFilter,
     setCity,
-    country,
+    countryFilter,
     setCountry,
     filteredData,
   } = useFilters(data);
@@ -51,13 +51,13 @@ const Dummy = () => {
       {/* Filters */}
       <CantoFilters
         data={data}
-        audienceFilter={audience}
+        audienceFilter={audienceFilter}
         setAudienceFilter={setAudience}
-        provinceFilter={province}
+        provinceFilter={provinceFilter}
         setProvinceFilter={setProvince}
-        cityFilter={city}
+        cityFilter={cityFilter}
         setCityFilter={setCity}
-        countryFilter={country}
+        countryFilter={countryFilter}
         setCountryFilter={setCountry}
       />
     </div>

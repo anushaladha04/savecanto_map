@@ -3,10 +3,10 @@ import { CsvRow } from '../types/types';
 
 export const useFilters = (data: CsvRow[]) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [audience, setAudience] = useState('all');
-  const [province, setProvince] = useState('all');
-  const [city, setCity] = useState('all');
-  const [country, setCountry] = useState('all');
+  const [audienceFilter, setAudience] = useState('all');
+  const [provinceFilter, setProvince] = useState('all');
+  const [cityFilter, setCity] = useState('all');
+  const [countryFilter, setCountry] = useState('all');
 
   const uniqueProvinces = useMemo(() => 
     Array.from(new Set(data.map(row => row['State/Province']).filter(Boolean))).sort(),
@@ -21,25 +21,26 @@ export const useFilters = (data: CsvRow[]) => {
   const filteredData = useMemo(() => 
     data.filter(row => {
       const matchesSearch = row.Name?.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesAudience = audience === 'all' || row.Audience === audience;
-      const matchesProvince = province === 'all' || row['State/Province'] === province;
-      const matchesCity = city === 'all' || row.City === city;
-      const matchesCountry = country === 'all' || row.Country === country;
+      const matchesAudience = !audienceFilter || audienceFilter === 'all' || row.Audience === audienceFilter;
+      const matchesProvince = !provinceFilter || provinceFilter === 'all' || row['State/Province'] === provinceFilter;
+      const matchesCity = !cityFilter || cityFilter === 'all' || row.City === cityFilter;
+      const matchesCountry = !countryFilter || countryFilter === 'all' || row.Country === countryFilter;
       return matchesSearch && matchesAudience && matchesProvince && matchesCity && matchesCountry;
+
     }),
-    [data, searchTerm, audience, province, city, country]
+    [data, searchTerm, audienceFilter, provinceFilter, cityFilter, countryFilter]
   );
 
   return {
     searchTerm,
     setSearchTerm,
-    audience,
+    audienceFilter,
     setAudience,
-    province,
+    provinceFilter,
     setProvince,
-    city,
+    cityFilter,
     setCity,
-    country,
+    countryFilter,
     setCountry,
     uniqueProvinces,
     uniqueCities,
