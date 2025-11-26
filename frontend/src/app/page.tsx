@@ -47,10 +47,18 @@ export default function Home() {
 
   return (
     <main className="min-h-screen grid place-items-center p-10 gap-10">
-      <h1 className="text-3xl font-bold">World Map of Cantonese Programs</h1>
+
+      <p className="w-[85vw]">Many Cantonese learners still struggle to learn the language, in part because educational institutions that offer Cantonese classes are difficult to find.
+        This map and database are a response to this critical need. Find a Cantonese program near you, and enroll today! To find a program, consult the map and
+        data table below it. You can filter by audience and zoom in to find a program near you. Contact the school directly for times and availability.</p>
+      
+        <p className="w-[85vw]">世界各地嘅粵語學習者經常都喺尋找呢種語言學習途徑上遇到困難。 尋找一個合適自己地區嘅課程係一件好困難嘅事。 所以，我哋為您呈現「粵語課程世界地圖」！尋找在你附近嘅粵語學校，儘快報名參加。粵語課程世界地圖若想要搜尋最適合你的粵語課程，歡迎瀏覽「粵語課程世界地圖」及其相關的數據表。 你還可以按照課程的等級，搜尋距離你最近的粵語課程，課程包括：K-12（幼稚園、小學和中學）、專上及高等教育、成人進修課程等等。假如你對其中任一粵語課程感興趣，請直接聯絡該校了解上課時間及相關細節。</p>
+
+      <h1 className="text-4xl font-semibold mt-7">World Map of Cantonese Programs</h1>
       
       {/* Filters at the top level */}
-      <div className="w-[90vw]">
+      <div className="w-[90vw] mt-7">
+        <div className="mb-2">
         <CantoFilters
           data={csvData}
           audienceFilter={audienceFilter}
@@ -62,13 +70,13 @@ export default function Home() {
           countryFilter={countryFilter}
           setCountryFilter={setCountry}
         />
+        </div>
+        <div className="relative w-[90vw] h-[80vh]">
+          <MapContainer 
+            programs={csvData} 
+            onPinClick={handlePinClick}
+          />
       </div>
-
-      <div className="relative w-[90vw] h-[80vh]">
-        <MapContainer 
-          programs={csvData} 
-          onPinClick={handlePinClick}
-        />
         
         {/* SidePanel manages its own state */}
         <SidePanel 
@@ -83,6 +91,26 @@ export default function Home() {
       
       <div className="w-[90vw]">
         <CantoTable />
+      </div>
+
+      <div className="text-center">
+        <h2 className="text-3xl font-semibold mb-10">Spot a missing program? We're all ears!️</h2>
+        <p className="w-[60vw] mb-15">
+          Want to display your program? Are there errors we should know about? Tell us about it{' '}
+          <a 
+            href="https://docs.google.com/forms/d/e/1FAIpQLSe8ux3_RBDXN9ThKjNMsNQ4mCYppMU3iMXnQYActGvDohoFvg/viewform?usp=dialog" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:text-blue-800 underline"
+          >
+            here
+          </a>. 
+          If you or someone you know is interested in volunteering to expand the World Map of Cantonese Program, please 
+          email us at{' '}
+          <a href="mailto:team@savecantonese.org" className="text-blue-600 hover:text-blue-800 underline">
+            team@savecantonese.org
+          </a>
+        </p>
       </div>
     </main>
   );
