@@ -77,11 +77,11 @@ export function SidePanel({
   const handlePinClick = useCallback((program: any) => {
     // Guard against null/undefined program
     if (!program) {
-      console.log('❌ handlePinClick: program is null/undefined');
+      console.log('handlePinClick: program is null/undefined');
       return;
     }
     
-    console.log('🔍 handlePinClick called with program:', {
+    console.log('handlePinClick called with program:', {
       id: program.id,
       csvIndex: program.csvIndex,
       name: program.name || program.Name,
@@ -95,19 +95,19 @@ export function SidePanel({
     if (program.csvIndex !== undefined && program.csvIndex !== null) {
       // Direct match using the stored row number
       matchingIndex = program.csvIndex;
-      console.log('✅ Using csvIndex:', matchingIndex);
+      console.log('Using csvIndex:', matchingIndex);
     } else if (program.id) {
       // Fallback: extract index from id format "csv-{index}"
       const idMatch = program.id.match(/^csv-(\d+)$/);
       if (idMatch) {
         matchingIndex = parseInt(idMatch[1], 10);
-        console.log('✅ Extracted index from id:', matchingIndex);
+        console.log('Extracted index from id:', matchingIndex);
       }
     }
     
     // Final fallback: match by name (for backward compatibility)
     if (matchingIndex === -1 || matchingIndex >= csvData.length) {
-      console.log('⚠️ Falling back to name matching');
+      console.log('Falling back to name matching');
       const programName = program.name || program.Name || '';
       matchingIndex = csvData.findIndex((row: any) => {
         const rowName = row.Name || '';
@@ -116,24 +116,24 @@ export function SidePanel({
       console.log('Name match result:', matchingIndex);
     }
     
-    console.log('📊 Final matchingIndex:', matchingIndex, 'csvData.length:', csvData.length);
+    console.log('Final matchingIndex:', matchingIndex, 'csvData.length:', csvData.length);
     
     if (matchingIndex !== -1 && matchingIndex < csvData.length) {
-      console.log('✅ Opening side panel for index:', matchingIndex);
+      console.log('Opening side panel for index:', matchingIndex);
       setSelectedProgramId(`csv-${matchingIndex}`);
       setIsOpen(true);
     } else {
-      console.log('❌ Failed to find matching index or index out of bounds');
+      console.log('Failed to find matching index or index out of bounds');
     }
   }, [csvData]);
 
   // Expose handlePinClick to parent via callback
   useEffect(() => {
     if (onPinClickHandlerReady) {
-      console.log('🔗 SidePanel: Exposing handlePinClick handler to parent');
+      console.log('SidePanel: Exposing handlePinClick handler to parent');
       onPinClickHandlerReady(handlePinClick);
     } else {
-      console.log('⚠️ SidePanel: onPinClickHandlerReady callback not provided');
+      console.log('SidePanel: onPinClickHandlerReady callback not provided');
     }
   }, [onPinClickHandlerReady, handlePinClick]);
 
@@ -239,7 +239,7 @@ export function SidePanel({
     <aside
       className={`side-panel ${
         isOpen ? "open" : ""
-      } absolute left-0 top-0 bottom-0 h-full z-50 w-full max-w-[24vw] bg-white rounded-r-xl overflow-y-auto overflow-x-hidden border-r-2 border-gray-300/60`}
+      } absolute left-0 top-0 bottom-0 h-full z-50 w-full max-w-[25vw] bg-white rounded-r-xl overflow-y-auto overflow-x-hidden border-r-2 border-gray-300/60`}
       role="dialog"
       aria-hidden={!isOpen}
       style={{
