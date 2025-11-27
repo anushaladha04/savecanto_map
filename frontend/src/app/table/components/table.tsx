@@ -39,7 +39,7 @@ const CantoTable = () => {
   const [cityFilter, setCityFilter] = useState('all');
   const [countryFilter, setCountryFilter] = useState('all');
   const [page, setPage] = useState(1);
-  const rowsPerPage = 20;
+  const rowsPerPage = 10;
 
   // Default sorting: Name ascending
   const [sortKey, setSortKey] = useState<SortKey>('Name');

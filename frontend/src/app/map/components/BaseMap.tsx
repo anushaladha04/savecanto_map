@@ -44,7 +44,7 @@ export default function BaseMap({
       cooperativeGestures
       dragRotate={false}
       touchZoomRotate={true}
-      attributionControl={{ compact: true }}
+      attributionControl={false}
       renderWorldCopies={false}
       onMoveEnd={(evt) => {
         if (onMoveEnd && evt.viewState) {
