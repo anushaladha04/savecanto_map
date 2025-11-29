@@ -148,7 +148,10 @@ vite.config.ts.timestamp-*
 .env
 
 appsscript.json
+
+# Root-level package files (we use frontend/package.json instead)
 package-lock.json
+package.json
 
 # VS Code (optional - you may want to keep this)
 .vscode/

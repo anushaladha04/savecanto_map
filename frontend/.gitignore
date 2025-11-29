@@ -41,4 +41,4 @@ yarn-error.log*
 next-env.d.ts
 
 # package
-package-lock.json
+# Note: package-lock.json is tracked for reproducibility
