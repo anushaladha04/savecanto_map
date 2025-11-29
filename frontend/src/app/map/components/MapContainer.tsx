@@ -18,6 +18,7 @@ import { convertCsvToPrograms } from '../utils/programUtils';
 import { calculateRegionBoundingBox } from '../utils/geoUtils';
 import type { BoundingBox } from '../utils/geoUtils';
 import type { Program } from './pins/PinsLayer';
+import Key from './pins/Key';
 
 // Region interface for PinsLayer
 interface Region {
@@ -225,6 +226,7 @@ export default function MapContainer({ programs: externalPrograms, onPinClick }:
 
   return (
     <BaseMap mapRef={mapRef} onMoveEnd={handleMoveEnd}>
+      <Key />
       {/* Hide clusters when a region is selected */}
       <ClusterLayer 
         onRegionSelect={handleRegionSelect} 
