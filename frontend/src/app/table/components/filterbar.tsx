@@ -41,38 +41,10 @@ const CantoFilters = ({
   const AudienceOptions = ["Adults", "Children & Teens", "College / University"];
 
   const filters = [
-    { 
-      label: "Age Group", 
-      value: audienceFilter, 
-      setValue: setAudienceFilter, 
-      options: AudienceOptions, 
-      placeholder: "Select an Audience",
-      isCountry: false
-    },
-    { 
-      label: "Country", 
-      value: countryFilter, 
-      setValue: setCountryFilter, 
-      options: allCountryCodes, 
-      placeholder: "Country",
-      isCountry: true
-    },
-    { 
-      label: "State/Province", 
-      value: provinceFilter, 
-      setValue: setProvinceFilter, 
-      options: uniqueProvinces || [], 
-      placeholder: "State/Province",
-      isCountry: false
-    },
-    { 
-      label: "City", 
-      value: cityFilter, 
-      setValue: setCityFilter, 
-      options: uniqueCities || [], 
-      placeholder: "City",
-      isCountry: false
-    },
+    { label: "Age Group", value: audienceFilter, setValue: setAudienceFilter, options: AudienceOptions, placeholder: "Select an Audience", isCountry: false },
+    { label: "City", value: cityFilter, setValue: setCityFilter, options: uniqueCities, placeholder: "Select a City", isCountry: false },
+    { label: "Country", value: countryFilter, setValue: setCountryFilter, options: allCountryCodes, placeholder: "Select a Country", isCountry: true },
+    { label: "State/Province", value: provinceFilter, setValue: setProvinceFilter, options: uniqueProvinces, placeholder: "Select a State/Province", isCountry: false },
   ];
 
   return (
