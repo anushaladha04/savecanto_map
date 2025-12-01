@@ -141,14 +141,14 @@ export default function MapContainer({ programs: externalPrograms, onPinClick }:
     if (onPinClick) {
       const programId = program.id || program.name || program.Name;
       lastOpenedProgramRef.current = programId;
-      console.log('📍 MapContainer: Calling onPinClick with program:', {
+      console.log('MapContainer: Calling onPinClick with program:', {
         id: program.id,
         csvIndex: program.csvIndex,
         name: program.name || program.Name
       });
       onPinClick(program);
     } else {
-      console.log('❌ MapContainer: onPinClick handler is not available');
+      console.log('MapContainer: onPinClick handler is not available');
     }
   };
 
@@ -215,7 +215,7 @@ export default function MapContainer({ programs: externalPrograms, onPinClick }:
       // Only open if it's a different program than the last one we opened
       if (programId !== lastOpenedProgramRef.current) {
         lastOpenedProgramRef.current = programId;
-        console.log('🔍 Micro zoom: Opening side panel for program:', nearestProgram.name || nearestProgram.Name);
+        console.log('Micro zoom: Opening side panel for program:', nearestProgram.name || nearestProgram.Name);
         onPinClick(nearestProgram);
       }
     } else {

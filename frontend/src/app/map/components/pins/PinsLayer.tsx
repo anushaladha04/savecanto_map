@@ -159,14 +159,14 @@ export default function PinsLayer({
                 style={{ position: 'relative', cursor: 'pointer' }}
                 onClick={() => {
                   if (onPinClick) {
-                    console.log('🖱️ PinsLayer: Pin clicked, calling onPinClick with program:', {
+                    console.log('PinsLayer: Pin clicked, calling onPinClick with program:', {
                       id: program.id,
                       csvIndex: program.csvIndex,
                       name: program.name || program.Name
                     });
                     onPinClick(program, lat, lng);
                   } else {
-                    console.log('❌ PinsLayer: onPinClick handler not available');
+                    console.log('PinsLayer: onPinClick handler not available');
                   }
                 }}
               >
