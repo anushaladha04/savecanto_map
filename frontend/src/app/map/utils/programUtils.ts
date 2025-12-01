@@ -13,15 +13,22 @@ interface CsvRow {
 }
 
 function mapAudienceToPinType(audience: string): 'adults' | 'kids' | 'college' | 'other' {
-  const normalized = audience?.trim() || '';
+  const normalized = audience?.trim().toLowerCase() || '';
   
-  if (normalized === 'Adults') {
+  // Handle Adults
+  if (normalized === 'adults') {
     return 'adults';
-  } else if (normalized === 'Children & Teens') {
+  } 
+  // Handle Children & Teens (various formats)
+  else if (normalized === 'children & teens' || normalized === 'children and teens' || 
+           normalized === 'children/teens' || normalized === 'children/teens') {
     return 'kids';
-  } else if (normalized === 'College / University') {
+  } 
+  // Handle College/University (various formats with/without spaces, slashes, ampersands)
+  else if (normalized.includes('college') && (normalized.includes('university') || normalized.includes('univ'))) {
     return 'college';
-  } else {
+  } 
+  else {
     return 'other';
   }
 }

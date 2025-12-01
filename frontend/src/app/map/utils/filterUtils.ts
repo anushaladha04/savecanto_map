@@ -7,6 +7,27 @@ export const getUniqueValues = (data: CsvRow[], key: keyof CsvRow): string[] => 
   return Array.from(new Set(data.map(row => row[key]).filter(Boolean))).sort();
 };
 
+// Helper function to normalize audience strings for comparison
+const normalizeAudience = (audience: string): string => {
+  if (!audience) return '';
+  return audience.trim().toLowerCase();
+};
+
+// Map filter values to possible CSV variations
+const getAudienceVariations = (filterValue: string): string[] => {
+  const normalized = normalizeAudience(filterValue);
+  if (normalized === 'college / university' || normalized === 'college/university') {
+    return ['College / University', 'College/University', 'College & University', 'College&University'];
+  }
+  if (normalized === 'children & teens' || normalized === 'children and teens') {
+    return ['Children & Teens', 'Children and Teens', 'Children&Teens', 'Children/Teens'];
+  }
+  if (normalized === 'adults') {
+    return ['Adults'];
+  }
+  return [filterValue]; // Return original if no mapping found
+};
+
 // Apply filters to dataset
 export const applyFilters = (
   data: CsvRow[],
@@ -20,7 +41,17 @@ export const applyFilters = (
 ): CsvRow[] => {
   return data.filter(row => {
     const matchesSearch = row.Name?.toLowerCase().includes(filters.searchTerm.toLowerCase());
-    const matchesAudience = filters.audience === 'all' || row.Audience === filters.audience;
+    
+    // Normalize audience matching to handle variations
+    let matchesAudience = true;
+    if (filters.audience && filters.audience !== 'all') {
+      const audienceVariations = getAudienceVariations(filters.audience);
+      const rowAudience = normalizeAudience(row.Audience || '');
+      matchesAudience = audienceVariations.some(variation => 
+        normalizeAudience(variation) === rowAudience
+      );
+    }
+    
     const matchesProvince = filters.province === 'all' || row['State/Province'] === filters.province;
     const matchesCity = filters.city === 'all' || row.City === filters.city;
     const matchesCountry = filters.country === 'all' || row.Country === filters.country;

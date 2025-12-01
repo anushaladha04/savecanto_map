@@ -231,6 +231,7 @@ export default function MapContainer({ programs: externalPrograms, onPinClick }:
       <ClusterLayer 
         onRegionSelect={handleRegionSelect} 
         visible={!selectedRegion}
+        programs={programs}
       />
       
       {/* Show pins ONLY when a region is selected (after clicking a cluster) */}

@@ -56,15 +56,22 @@ function getProgramType(program: any): 'adults' | 'kids' | 'college' | 'other' {
   
   // Otherwise, convert from Audience field
   const audience = program.Audience || program.audience || '';
-  const normalized = audience.trim();
+  const normalized = audience.trim().toLowerCase();
   
-  if (normalized === 'Adults') {
+  // Handle Adults
+  if (normalized === 'adults') {
     return 'adults';
-  } else if (normalized === 'Children & Teens') {
+  } 
+  // Handle Children & Teens (various formats)
+  else if (normalized === 'children & teens' || normalized === 'children and teens' || 
+           normalized === 'children/teens' || normalized === 'children/teens') {
     return 'kids';
-  } else if (normalized === 'College / University') {
+  } 
+  // Handle College/University (various formats with/without spaces, slashes, ampersands)
+  else if (normalized.includes('college') && (normalized.includes('university') || normalized.includes('univ'))) {
     return 'college';
-  } else {
+  } 
+  else {
     return 'other';
   }
 }

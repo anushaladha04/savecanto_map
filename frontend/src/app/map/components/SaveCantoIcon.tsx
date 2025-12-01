@@ -11,7 +11,7 @@ export default function SaveCantoIcon() {
       style={{
         position: 'absolute',
         bottom: '20px',
-        left: '20px',
+        right: '70px',
         zIndex: 1000,
       }}
     >

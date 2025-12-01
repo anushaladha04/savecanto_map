@@ -2,11 +2,23 @@
 // group programs by region
 // compute donut clusters: total count + segment percentages
 
+import type { Program } from '../components/pins/PinsLayer';
+import { calculateRegionBoundingBox } from './geoUtils';
+import type { BoundingBox } from './geoUtils';
+
+export interface ProgramTypeBreakdown {
+  adults: number;
+  kids: number;
+  college: number;
+  other: number;
+}
+
 export interface RegionCluster {
   id: number;
   centroidLat: number;
   centroidLng: number;
   pointCount: number;
+  programTypeBreakdown?: ProgramTypeBreakdown;
 }
 
 // Region clusters data based on program locations
@@ -31,10 +43,69 @@ export const REGION_CLUSTERS: RegionCluster[] = [
 ];
 
 /**
- * Get all region clusters
+ * Check if a program is within a bounding box
  */
-export function getRegionClusters(): RegionCluster[] {
-  return REGION_CLUSTERS;
+function isProgramInBoundingBox(program: Program, bbox: BoundingBox): boolean {
+  const { latitude, longitude } = program;
+  
+  if (!latitude || !longitude || isNaN(latitude) || isNaN(longitude)) {
+    return false;
+  }
+  
+  return (
+    longitude >= bbox.west &&
+    longitude <= bbox.east &&
+    latitude >= bbox.south &&
+    latitude <= bbox.north
+  );
+}
+
+/**
+ * Calculate program type breakdown for a cluster
+ * Uses bounding box matching
+ */
+function calculateProgramTypeBreakdown(
+  cluster: RegionCluster,
+  programs: Program[]
+): ProgramTypeBreakdown {
+  const bbox = calculateRegionBoundingBox(
+    cluster.centroidLat,
+    cluster.centroidLng,
+    cluster.pointCount
+  );
+  
+  const breakdown: ProgramTypeBreakdown = {
+    adults: 0,
+    kids: 0,
+    college: 0,
+    other: 0,
+  };
+  
+  programs.forEach((program) => {
+    if (isProgramInBoundingBox(program, bbox)) {
+      const type = program.type || 'other';
+      if (type in breakdown) {
+        breakdown[type as keyof ProgramTypeBreakdown]++;
+      }
+    }
+  });
+  
+  return breakdown;
+}
+
+/**
+ * Get all region clusters with program type breakdowns
+ * Always calculates breakdown for all clusters, even if programs array is empty
+ */
+export function getRegionClusters(programs?: Program[]): RegionCluster[] {
+  // Always calculate breakdown for all clusters
+  // If no programs provided, breakdown will be all zeros
+  const programsToUse = programs || [];
+  
+  return REGION_CLUSTERS.map((cluster) => ({
+    ...cluster,
+    programTypeBreakdown: calculateProgramTypeBreakdown(cluster, programsToUse),
+  }));
 }
 
 /**
