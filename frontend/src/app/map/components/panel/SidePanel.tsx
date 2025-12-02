@@ -9,6 +9,7 @@ import { AdvancedDetails } from "./AdvancedDetails";
 import { SelectedPrograms } from "./SelectedPrograms";
 import type { ProgramDetails } from "./types";
 import type { CsvRow } from "../filters/types";
+import { Globe, ExternalLink } from "lucide-react";
 
 interface SidePanelProps {
   csvData: CsvRow[];
@@ -19,6 +20,15 @@ interface SidePanelProps {
   hasActiveFilters?: boolean;
   // Callback to expose the handlePinClick function to parent
   onPinClickHandlerReady?: (handler: (program: any) => void) => void;
+  // Notify parent when panel is explicitly closed
+  onPanelClose?: () => void;
+  // Active filter values to display
+  activeFilters?: {
+    audience?: string;
+    province?: string;
+    city?: string;
+    country?: string;
+  };
 }
 
 export function SidePanel({ 
@@ -28,6 +38,8 @@ export function SidePanel({
   csvError,
   hasActiveFilters = false,
   onPinClickHandlerReady,
+  onPanelClose,
+  activeFilters = {},
 }: SidePanelProps) {
   // Internal state management
   const [isOpen, setIsOpen] = useState(false);
@@ -231,6 +243,7 @@ export function SidePanel({
     setIsOpen(false);
     setSelectedProgramId(null);
     setSelectedProgram(null);
+    onPanelClose?.();
   };
 
   if (!isOpen) return null;
@@ -239,45 +252,89 @@ export function SidePanel({
     <aside
       className={`side-panel ${
         isOpen ? "open" : ""
-      } absolute left-0 top-0 bottom-0 h-full z-50 w-full max-w-[25vw] bg-white rounded-r-xl overflow-y-auto overflow-x-hidden border-r-2 border-gray-300/60`}
+      } absolute left-0 top-0 bottom-0 h-full z-50 w-full max-w-[25vw] bg-white rounded-r-xl overflow-hidden border-r-2 border-gray-300/60 flex flex-col`}
       role="dialog"
       aria-hidden={!isOpen}
       style={{
         boxShadow: '4px 0 24px rgba(0, 0, 0, 0.15), 2px 0 8px rgba(0, 0, 0, 0.1), inset -1px 0 0 rgba(255, 255, 255, 0.1)',
       }}
     >
-      {/* Subtle top border accent for depth */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-gray-300/40 via-gray-200/30 to-transparent pointer-events-none" />
-      
-      {/* Close button */}
-      <div className="flex justify-end p-4 relative z-10">
+      {/* Sticky header with back arrow and close button */}
+      <div className="sticky top-0 bg-white z-20 flex items-center justify-between p-4">
+        {selectedProgram ? (
+          <button
+            aria-label="Back to program list"
+            onClick={handleCloseDetails}
+            className="text-xl text-gray-500 hover:text-gray-700 transition-colors px-2 py-1 rounded-md hover:bg-gray-100"
+          >
+            ←
+          </button>
+        ) : (
+          <div className="w-10" />
+        )}
         <button
           aria-label="Close panel"
           onClick={handleClose}
-          className="text-2xl leading-none px-1 py-0.5 rounded-md hover:bg-gray-100"
+          className="text-2xl leading-none text-gray-500 hover:text-gray-700 transition-colors px-2 py-1 rounded-md hover:bg-gray-100"
         >
           ×
         </button>
       </div>
 
-      {/* Content */}
-      {csvLoading || isLoading ? (
-        <div className="px-6 py-8">Loading…</div>
-      ) : csvError ? (
-        <div className="px-6 py-8 text-red-500">CSV Error: {csvError}</div>
-      ) : error ? (
-        <div className="px-6 py-8 text-red-500">Error: {error.message}</div>
-      ) : selectedProgram ? (
-        <AdvancedDetails
-          program={selectedProgram}
-          isOpen={true}
-          onClose={handleCloseDetails}
-        />
-      ) : (
-        <SelectedPrograms
-          programs={allPrograms}
-          onSelect={handleSelectProgram}
-        />
+      {/* Scrollable content */}
+      <div className="flex-1 overflow-y-auto">
+        {csvLoading || isLoading ? (
+          <div className="px-6 py-8">Loading…</div>
+        ) : csvError ? (
+          <div className="px-6 py-8 text-red-500">CSV Error: {csvError}</div>
+        ) : error ? (
+          <div className="px-6 py-8 text-red-500">Error: {error.message}</div>
+        ) : selectedProgram ? (
+          <AdvancedDetails
+            program={selectedProgram}
+            isOpen={true}
+            onClose={handleCloseDetails}
+            onBack={handleCloseDetails}
+          />
+        ) : (
+          <SelectedPrograms
+            programs={allPrograms}
+            onSelect={handleSelectProgram}
+            activeFilters={activeFilters}
+          />
+        )}
+      </div>
+
+      {/* Sticky footer with website section */}
+      {selectedProgram && selectedProgram.website && (
+        <div className="sticky bottom-0 bg-white px-6 py-4">
+          <div className="text-base text-gray-800 mb-3">Website:</div>
+          <a
+            href={selectedProgram.website.startsWith('http') ? selectedProgram.website : `https://${selectedProgram.website}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block w-full bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 h-48 hover:border-blue-400 hover:shadow-md transition-all group relative"
+          >
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center p-4">
+                <Globe className="w-12 h-12 mx-auto mb-2 text-gray-400 group-hover:text-blue-500 transition-colors" />
+                <p className="text-sm text-gray-600 font-medium mb-1">Click to visit website</p>
+                <p className="text-xs text-gray-400 break-words px-2 max-w-full">{selectedProgram.website}</p>
+                <ExternalLink className="w-4 h-4 mx-auto mt-2 text-gray-400 group-hover:text-blue-500 transition-colors" />
+              </div>
+            </div>
+            {/* Overlay to indicate it's clickable */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+          </a>
+          <a
+            href={selectedProgram.website.startsWith('http') ? selectedProgram.website : `https://${selectedProgram.website}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 text-xs text-blue-600 hover:text-blue-800 hover:underline break-all block"
+          >
+            {selectedProgram.website}
+          </a>
+        </div>
       )}
     </aside>
   );
