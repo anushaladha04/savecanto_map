@@ -7,28 +7,38 @@
 
 import React from 'react';
 import { Marker } from 'react-map-gl/maplibre';
+import { IconRenderer } from './IconSet';
 
 // --------------------------PINS MARKER COMPONENT!! (haydn) ------------------------------
 // Build color pin icons (adults/kids/college/other)
 // Renders colored pin with matching icon for each program type
 
-type ProgramType = 'adults' | 'kids' | 'college' | 'other';
+export type ProgramType = 'adults' | 'kids' | 'college' | 'other';
 
 // map each program to color
-const colorMap: Record<ProgramType, string> = {
+export const colorMap: Record<ProgramType, string> = {
   adults: '#1FC6E3',           // blue
   kids: '#FFC300',             // yellow
   college: '#E60001',          // red
   other: '#7DD48B',            // green
 };
 
+// Program interface
+interface Program {
+  id: string;
+  name: string;
+  type: ProgramType;
+  latitude: number;
+  longitude: number;
+}
+
 // Props interface - supports both old and new interfaces
 interface PinMarkerProps {
   // New interface (from sunny_micro_zoom) - for Marker wrapper
   latitude?: number;
   longitude?: number;
-  program?: any;
-  onClick?: (program: any, latitude: number, longitude: number) => void;
+  program?: Program;
+  onClick?: (program: Program, latitude: number, longitude: number) => void;
   
   // Old interface (from HEAD) - for use inside existing Marker
   type?: ProgramType;
@@ -53,71 +63,19 @@ function PinIcon({ type, size = 32, isHovered }: { type: ProgramType; size?: num
         transition: 'all 0.2s ease-in-out',
       }}
     >
-      {/* Unified pin shape - circle connected to rounded teardrop point */}
-      <path d="M 4 14 C 4 6 10 2 16 2 C 22 2 28 6 28 14 C 28 20 16 42 16 42 C 16 42 4 20 4 14 Z" fill={color} />
+      {/* Teardrop pin shape from Figma - scaled and centered */}
+      <g transform="translate(8, 2) scale(1.8)">
+        <path d="M6.50241 18.3182C6.50241 18.3182 -1.48769 9.37587 0.246298 4.06638C1.98029 -1.24311 11.0447 -1.46667 12.7585 4.06638C14.4723 9.59943 6.50241 18.3182 6.50241 18.3182Z" 
+              fill={color} />
+        {/* White border */}
+        <path d="M6.50241 18.3182C6.50241 18.3182 -1.48769 9.37587 0.246298 4.06638C1.98029 -1.24311 11.0447 -1.46667 12.7585 4.06638C14.4723 9.59943 6.50241 18.3182 6.50241 18.3182Z" 
+              fill="none" stroke="white" strokeWidth="0.6" />
+      </g>
       
-      {/* White border around the pin */}
-      <path d="M 4 14 C 4 6 10 2 16 2 C 22 2 28 6 28 14 C 28 20 16 42 16 42 C 16 42 4 20 4 14 Z" fill="none" stroke="white" strokeWidth="1" />
-      
-      {/* ADULTS - Star icon (blue) */}
-      {type === 'adults' && (
-        <g>
-          {/* Star shape */}
-          <polygon points="16,5 20,13 28,13 22,19 25,27 16,21 7,27 10,19 4,13 12,13" fill="white" />
-        </g>
-      )}
-      
-      {/* KIDS - Baby face icon (yellow) */}
-      {type === 'kids' && (
-        <g>
-          {/* Face circle - rounder, chubby baby face */}
-          <circle cx="16" cy="13" r="7.5" fill="none" stroke="white" strokeWidth="1.2" />
-          
-          {/* Left cheek - cute blush */}
-          <circle cx="9" cy="14" r="1.5" fill="white" opacity="0.8" />
-          {/* Right cheek - cute blush */}
-          <circle cx="23" cy="14" r="1.5" fill="white" opacity="0.8" />
-          
-          {/* Left eye - bigger, round */}
-          <circle cx="12" cy="10" r="1.8" fill="white" />
-          {/* Right eye - bigger, round */}
-          <circle cx="20" cy="10" r="1.8" fill="white" />
-          
-          {/* Big happy smile - curved arc */}
-          <path d="M 12 14 Q 16 17 20 14" stroke="white" strokeWidth="1.8" fill="none" strokeLinecap="round" />
-        </g>
-      )}
-      
-      {/* COLLEGE - Apple icon (red) */}
-      {type === 'college' && (
-        <g>
-          {/* Apple outline - hollow shape, rounder and taller */}
-          <path d="M 16 7 Q 11 7 9 10.5 Q 8 12.5 9 14.5 Q 11 17 16 17 Q 21 17 23 14.5 Q 24 12.5 23 10.5 Q 21 7 16 7" 
-                fill="none" stroke="white" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-          {/* Apple stem - small line */}
-          <line x1="16" y1="6.5" x2="16" y2="4.5" stroke="white" strokeWidth="1" strokeLinecap="round" />
-          {/* Leaf - curved shape */}
-          <path d="M 18 5.5 Q 20.5 4.5 21.5 6" fill="none" stroke="white" strokeWidth="1" strokeLinecap="round" />
-        </g>
-      )}
-      
-      {/* OTHER - Gear/Settings icon (green) */}
-      {type === 'other' && (
-        <g>
-          {/* Gear circle center */}
-          <circle cx="16" cy="14" r="3" fill="white" />
-          {/* Gear teeth */}
-          <rect x="15" y="7" width="2" height="2" fill="white" />
-          <rect x="15" y="19" width="2" height="2" fill="white" />
-          <rect x="9" y="13" width="2" height="2" fill="white" />
-          <rect x="21" y="13" width="2" height="2" fill="white" />
-          {/* Diagonal teeth */}
-          <rect x="10" y="7.5" width="1.5" height="1.5" fill="white" transform="rotate(45 10 9)" />
-          <rect x="18.5" y="18" width="1.5" height="1.5" fill="white" transform="rotate(45 21 20)" />
-          <rect x="20" y="8" width="1.5" height="1.5" fill="white" transform="rotate(-45 21 9)" />
-          <rect x="11.5" y="19" width="1.5" height="1.5" fill="white" transform="rotate(-45 10 20)" />
-        </g>
-      )}
+      {/* Icon renderer from IconSet - centered in the pin circle */}
+      <g transform="translate(20, 15) scale(2)">
+        <IconRenderer type={type} />
+      </g>
     </svg>
   );
 }

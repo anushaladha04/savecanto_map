@@ -235,7 +235,9 @@ export default function MapContainer({ programs: externalPrograms, onPinClick, p
 
   return (
     <BaseMap mapRef={mapRef} onMoveEnd={handleMoveEnd}>
-      <Key />
+      <div className="absolute top-4 right-4 z-20">
+        <Key />
+      </div>
       {/* Hide clusters when a region is selected */}
       <ClusterLayer 
         onRegionSelect={handleRegionSelect} 
