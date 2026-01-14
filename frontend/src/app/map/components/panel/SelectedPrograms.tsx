@@ -4,6 +4,7 @@ import React, { useState, useMemo } from "react";
 import type { ProgramDetails } from "./types";
 import { MapPin } from "lucide-react";
 import { colorMap, type ProgramType } from "../pins/PinMarker";
+import { normalizeCategoryLabel } from "../../utils/programUtils";
 import {
   Pagination,
   PaginationContent,
@@ -32,6 +33,15 @@ function mapCategoryToProgramType(category: string): ProgramType {
     ?.toLowerCase()
     .replace(/&/g, "and")
     .replace(/[^a-z]/g, "") || "";
+  const original = category?.trim() || "";
+  const normalized = category?.toLowerCase() || "";
+
+  // Handle K-12 After School and K-12 Public School (including Chinese variants)
+  // Check original for "K-12" (case-sensitive) and normalized for "k-12" or "k12"
+  if (normalized.includes("k-12") || normalized.includes("k12") || 
+      original.includes("K-12") || original.includes("課後課程") || original.includes("公立學校")) {
+    return "kids";
+  }
 
   if (cleaned.includes("adult")) {
     return "adults";
@@ -183,7 +193,7 @@ export function SelectedPrograms({
                         backgroundColor: "#FFFFFF",
                       }}
                     >
-                      {p.category}
+                      {normalizeCategoryLabel(p.category)}
                     </div>
                   )}
 

@@ -15,7 +15,7 @@ interface ClusterMarkerProps {
 // Program type colors matching the pin colors
 const PROGRAM_TYPE_COLORS: Record<string, string> = {
   adults: '#1FC6E3',    // blue
-  kids: '#FFC300',      // yellow
+  kids: '#E6B000',      // slightly darker yellow
   college: '#E60001',   // red
   other: '#7DD48B',     // green
 };

@@ -2,7 +2,7 @@
 
 Collaboration between Nova, Tech for Good at UCLA and NPO SaveCantonese.
 
-## Project Structure
+# Project Structure
 
 ```text
 savecanto_map/

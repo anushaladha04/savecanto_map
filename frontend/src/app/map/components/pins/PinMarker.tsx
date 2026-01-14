@@ -18,7 +18,7 @@ export type ProgramType = 'adults' | 'kids' | 'college' | 'other';
 // map each program to color
 export const colorMap: Record<ProgramType, string> = {
   adults: '#1FC6E3',           // blue
-  kids: '#FFC300',             // yellow
+  kids: '#E6B000',             // slightly darker yellow
   college: '#E60001',          // red
   other: '#7DD48B',            // green
 };

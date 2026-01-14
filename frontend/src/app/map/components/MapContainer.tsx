@@ -40,12 +40,15 @@ export default function MapContainer({ programs: externalPrograms, onPinClick, p
   const [selectedRegion, setSelectedRegion] = useState<Region | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentZoom, setCurrentZoom] = useState(1.5);
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [isLocating, setIsLocating] = useState(false);
   const lastOpenedProgramRef = useRef<string | null>(null);
 
   // SaveCanto brand orange (picked from SaveCanto icon)
   const SAVECANTO_ORANGE = "#F98A1B";
+  
+  // Location feature state
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [isLocating, setIsLocating] = useState(false);
+  const LOCATION_BLUE = "#1976D2";
   
   // Get map dimensions (can be made dynamic based on container size)
   const mapWidth = typeof window !== 'undefined' ? window.innerWidth * 0.9 : 800;
@@ -272,32 +275,51 @@ export default function MapContainer({ programs: externalPrograms, onPinClick, p
     }
   }, [onPinClick, programs, displayPrograms]);
 
-  // Handler to locate the user's current position and zoom to it
+  // Handler to locate the user's current position
   const handleLocateMe = useCallback(() => {
+    // Check if geolocation is available
     if (typeof window === 'undefined' || !('geolocation' in navigator)) {
-      console.warn('Geolocation is not available in this environment.');
+      alert('Geolocation is not supported in your browser.');
       return;
     }
 
+    // Prevent multiple simultaneous requests
     if (isLocating) return;
+    
     setIsLocating(true);
 
+    // Request location - browser will show permission prompt
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
+        
+        // Store user location
         setUserLocation({ lat: latitude, lng: longitude });
-        // Zoom to a reasonable city-level zoom
+        
+        // Zoom to user location
         zoomToCoordinates(longitude, latitude, 9);
+        
+        // Create region to show pins around user location
+        const boundingBox = calculateRegionBoundingBox(latitude, longitude, 1, 0.5);
+        setSelectedRegion({
+          id: `user-location-${latitude}-${longitude}`,
+          name: 'Your Location',
+          boundingBox,
+        });
+        
         setIsLocating(false);
       },
-      (error) => {
-        console.error('Error getting current location:', error);
+      (error: GeolocationPositionError) => {
         setIsLocating(false);
+        
+        // Handle errors silently - browser already shows its own prompt
+        // Only log for debugging
+        console.error('Location error:', error.code, error.message);
       },
       {
-        enableHighAccuracy: true,
+        enableHighAccuracy: false, // Use less accurate but faster method
         timeout: 10000,
-        maximumAge: 0,
+        maximumAge: 60000, // Accept cached location up to 1 minute old
       }
     );
   }, [zoomToCoordinates, isLocating]);
@@ -344,14 +366,14 @@ export default function MapContainer({ programs: externalPrograms, onPinClick, p
             <div
               className="w-6 h-6 rounded-full animate-ping"
               style={{
-                backgroundColor: `${SAVECANTO_ORANGE}33`,
-                border: `1px solid ${SAVECANTO_ORANGE}`,
+                backgroundColor: `${LOCATION_BLUE}33`,
+                border: `1px solid ${LOCATION_BLUE}`,
               }}
             />
             {/* Inner dot */}
             <div
               className="absolute inset-1 w-4 h-4 rounded-full border-2 border-white shadow"
-              style={{ backgroundColor: SAVECANTO_ORANGE }}
+              style={{ backgroundColor: LOCATION_BLUE }}
             />
           </div>
         </Marker>
@@ -370,7 +392,7 @@ export default function MapContainer({ programs: externalPrograms, onPinClick, p
         onClick={handleLocateMe}
         className="absolute bottom-4 left-4 z-20 bg-white/95 hover:bg-white text-gray-900 text-xs font-medium rounded-full shadow-lg border border-gray-300 px-4 py-2 flex items-center gap-2"
       >
-        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: SAVECANTO_ORANGE }} />
+        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: LOCATION_BLUE }} />
         <span>{isLocating ? 'Locating…' : 'Your location'}</span>
       </button>
 

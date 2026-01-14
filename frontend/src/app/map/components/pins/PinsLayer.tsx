@@ -57,6 +57,13 @@ function getProgramType(program: any): 'adults' | 'kids' | 'college' | 'other' {
   // Otherwise, convert from Audience field
   const audience = program.Audience || program.audience || '';
   const normalized = audience.trim().toLowerCase();
+  const original = audience.trim();
+  
+  // Handle K-12 After School and K-12 Public School (including Chinese variants)
+  if (normalized.includes('k-12') || normalized.includes('k12') || 
+      original.includes('K-12') || original.includes('課後課程') || original.includes('公立學校')) {
+    return 'kids';
+  }
   
   // Handle Adults
   if (normalized === 'adults') {
@@ -64,7 +71,8 @@ function getProgramType(program: any): 'adults' | 'kids' | 'college' | 'other' {
   } 
   // Handle Children & Teens (various formats)
   else if (normalized === 'children & teens' || normalized === 'children and teens' || 
-           normalized === 'children/teens' || normalized === 'children/teens') {
+           normalized === 'children/teens' || normalized === 'children/teens' ||
+           normalized.includes('child') || normalized.includes('teen')) {
     return 'kids';
   } 
   // Handle College/University (various formats with/without spaces, slashes, ampersands)
@@ -99,7 +107,7 @@ function isInRegion(program: any, region: Region): boolean {
 // Map program type to tooltip color
 const tooltipColorMap: Record<string, string> = {
   adults: '#1FC6E3',      // blue
-  kids: '#FFC300',        // yellow
+  kids: '#E6B000',        // slightly darker yellow
   college: '#E60001',     // red
   other: '#7DD48B',       // green
 };
@@ -192,14 +200,16 @@ export default function PinsLayer({
                     {/* Tooltip box with chat bubble arrow on bottom-right */}
                     <div
                       style={{
-                        backgroundColor: tooltipColorMap[programType] || tooltipColorMap.other,
-                        color: 'white',
+                        backgroundColor: 'white',
+                        color: 'black',
                         padding: '6px 10px',
                         borderRadius: '3px',
                         fontSize: '11px',
                         fontWeight: 500,
                         whiteSpace: 'nowrap',
                         position: 'relative',
+                        border: `1px solid ${tooltipColorMap[programType] || tooltipColorMap.other}`,
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
                       }}
                     >
                       {programName}
@@ -214,7 +224,21 @@ export default function PinsLayer({
                           height: 0,
                           borderLeft: '5px solid transparent',
                           borderRight: '5px solid transparent',
-                          borderTop: `5px solid ${tooltipColorMap[programType] || tooltipColorMap.other}`,
+                          borderTop: '5px solid white',
+                        }}
+                      />
+                      {/* Arrow border to match tooltip border */}
+                      <div
+                        style={{
+                          position: 'absolute',
+                          bottom: '-5px',
+                          right: '7px',
+                          width: 0,
+                          height: 0,
+                          borderLeft: '6px solid transparent',
+                          borderRight: '6px solid transparent',
+                          borderTop: `6px solid ${tooltipColorMap[programType] || tooltipColorMap.other}`,
+                          zIndex: -1,
                         }}
                       />
                     </div>
