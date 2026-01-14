@@ -1,115 +1,110 @@
-function migrateNewToApproval() {
-  // ran onFormSubmit
-  const ss = SpreadsheetApp.openById("1pUcB7jAyXFj7-BAmOh3M5ipWfLChn5CY1dH_0FPDXVE");
+function migrateNewToApproval(e) {
+  const ss = SpreadsheetApp.openById(
+    "1t_dFtkP5DI4C-B9SF7_b9bTED6bvdRS4EHDGdv93baI"
+  );
   const newSheet = ss.getSheetByName("NewPrograms");
   const approvalSheet = ss.getSheetByName("Approval");
   const correctionsSheet = ss.getSheetByName("Corrections");
 
-  const data = newSheet.getDataRange().getValues();
-  const approvalData = approvalSheet.getDataRange().getValues(); // for duplicate checking
+  const approvalData = approvalSheet.getDataRange().getValues();
   const geocoder = Maps.newGeocoder();
+  save_canto_email = "haydn@g.ucla.edu" // UPDATE EVENTUALLY
 
-  for (let i = 1; i < data.length; i++) {
-    const row = data[i];
-    const action = row[2]; // C
+  // e.values = the submitted row (array)
+  const row = e.values;
+  const submitter_email = row[1];
+  const timestamp = row[0];
+  
+  // IMPORTANT: Make sure indices match your sheet exactly.
+  const action = row[2]; // Column C
 
-    if (action === "Add a Cantonese program/添加一個粵語課程的資料") {
-      // Columns D–L are indices 3–11
-      const beforeJ = row.slice(3, 9); // D to I
-      const address = row[10]; // K
-      const raw_url = row.slice(11, 12); // L
+  // ---------- NEW PROGRAMS FLOW ----------
+  if (action === "Add a Cantonese program/添加一個粵語課程的資料") {
+    const beforeJ = row.slice(3, 9); // D to I
+    const address = row[10]; // K
+    const raw_url = row.slice(11, 12); // L
 
-      // Get latitude/longitude
-      let lat = "";
-      let lng = "";
-      if (address && address.trim() !== "") {
-        try {
-          const response = geocoder.geocode(address);
-          if (response.status === "OK" && response.results.length > 0) {
-            const location = response.results[0].geometry.location;
-            lat = location.lat;
-            lng = location.lng;
-          }
-        } catch (e) {
-          Logger.log("Geocoding failed for address: " + address + " - " + e);
+    // ----- Geocode address -----
+    let lat = "";
+    let lng = "";
+    if (address && address.trim() !== "") {
+      try {
+        const response = geocoder.geocode(address);
+        if (response.status === "OK" && response.results.length > 0) {
+          const loc = response.results[0].geometry.location;
+          lat = loc.lat;
+          lng = loc.lng;
         }
+      } catch (err) {
+        Logger.log("Geocoding failed for: " + address + " - " + err);
       }
-
-      // Skip if lat/lng already exist together in Approval sheet
-      const duplicate = approvalData.some(r => {
-        return r.includes(lat) && r.includes(lng);
-      });
-      if (duplicate) {
-        Logger.log(`Skipping duplicate for lat:${lat}, lng:${lng}, address: ${address}`);
-        continue;
-      }
-
-      /* formatted_url = normalizeUrl(raw_url)
-      if (formatted_url === "") {
-        Logger.log(`Bad URL`);
-        continue;
-      }
-      */
-
-      // Combine data: D–I, address, lat, lng, L, then status columns
-      const valuesToMove = [...beforeJ, address, lat, lng, raw_url, "needs_review"];
-
-      // Find next empty row in Approval
-      const targetRow = approvalSheet.getLastRow() + 1;
-
-      // Write to Approval
-      approvalSheet
-        .getRange(targetRow, 1, 1, valuesToMove.length)
-        .setValues([valuesToMove]);
     }
-    else {
-      // Get metadata fields from correction form
-      const newAddress = row[21]; // Column V: "If updating location, what is the new address?"
-      let lat = "";
-      let lng = "";
 
-      // Geocode new address (only if present)
-      if (newAddress && newAddress.trim() !== "") {
-        try {
-          const geo = Maps.newGeocoder().geocode(newAddress);
+    // ----- Build Approval row -----
+    const valuesToMove = [
+      ...beforeJ,
+      address,
+      lat,
+      lng,
+      raw_url,
+      "needs_review",
 
-          if (geo.status === "OK" && geo.results && geo.results.length > 0) {
-            const loc = geo.results[0].geometry.location;
-            lat = loc.lat;
-            lng = loc.lng;
-          }
+    ];
 
-        } catch (err) {
-          Logger.log("Geocoding failed for: " + newAddress + " — " + err);
-        }
+    const targetRow = approvalSheet.getLastRow() + 1;
+    approvalSheet
+      .getRange(targetRow, 1, 1, valuesToMove.length)
+      .setValues([valuesToMove]);
+    approvalSheet.getRange(targetRow, 14, 1, 1).setValue(submitter_email);
+    approvalSheet.getRange(targetRow, 15, 1, 1).setValue(timestamp);
+    sendEmailNotif("Submission", save_canto_email, row[3], timestamp);
+    
+    checkWebsitesAndUpdateSheet(targetRow);
+    approvalSheet.getRange(targetRow, 12).setValue("Pending Approval");
+  }
+
+  // ---------- CORRECTIONS FLOW ----------
+  const newAddress = row[21]; // Column V
+  let lat = "";
+  let lng = "";
+
+  if (newAddress && newAddress.trim() !== "") {
+    try {
+      const geo = Maps.newGeocoder().geocode(newAddress);
+      if (geo.status === "OK" && geo.results && geo.results.length > 0) {
+        const loc = geo.results[0].geometry.location;
+        lat = loc.lat;
+        lng = loc.lng;
       }
-
-      // Build the row matching the Corrections sheet layout
-      const status = "Not Applied (Pending)";
-
-      const combinedData = [
-        status,         // A: Status
-        row[12],        // B: Current Name
-        row[14],        // C: New Name
-        row[15],        // D: New Type (New Audience)
-        row[16],        // E: New City
-        row[17],        // F: New State
-        row[18],        // G: New Country
-        row[19],        // H: New Level of Canto
-        row[21],        // I: New Address
-        lat,             // J: New Latitude (blank for corrections)
-        lng,             // K: New Longitude (blank for corrections)
-        row[22]         // L: New Website
-      ];
-
-      const targetRow = correctionsSheet.getLastRow() + 1;
-
-      correctionsSheet
-        .getRange(targetRow, 1, 1, combinedData.length)
-        .setValues([combinedData]);
+    } catch (err) {
+      Logger.log("Geocoding failed for: " + newAddress + " - " + err);
     }
   }
+
+  const status = "Not Applied (Pending)";
+  const combinedData = [
+    status,         // A
+    row[12],        // B current name
+    row[14],        // C new name
+    row[15],        // D new type
+    row[16],        // E new city
+    row[17],        // F new state
+    row[18],        // G new country
+    row[19],        // H new level
+    row[21],        // I new address
+    lat,            // J new lat
+    lng,            // K new lng
+    row[22],        // L new website
+  ];
+  
+  const targetRow = correctionsSheet.getLastRow() + 1;
+  correctionsSheet
+    .getRange(targetRow, 1, 1, combinedData.length)
+    .setValues([combinedData]);
+
+  
 }
+
 
 function migrateLegacyToApproval() {
   // DONT RUN THIS FUNCTION ANYMORE! ONE-TIME LEGACY MIGRATION COMPLETE!
@@ -140,10 +135,7 @@ function migrateLegacyToApproval() {
     const row = oldData[i];
     const website = row[9]; // website column index
 
-    if (!website) continue;
-
     const normalized = normalizeUrl(website);
-    if (!normalized || existingWebsites.has(normalized)) continue;
 
     const newRow = row.slice(0, K);
     newRow.push("needs_review");

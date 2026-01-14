@@ -29,8 +29,10 @@ function moveApprovedRows() {
     // Only Approved and not yet Transferred
     if (status === approvedValue && transferStatus !== transferredMarker) {
       approvedRows.push(data[i]);
-      rowsToMark.push(i + 1); // +1 for sheet row index
-    }
+    sourceSheet
+    .getRange(i + 1, transferredColumn)
+    .setValue(transferredMarker);
+}
 
     // anusha: was approved before, now denied + removed from target
     if (status !== approvedValue && transferStatus === transferredMarker) {
@@ -65,25 +67,27 @@ function moveApprovedRows() {
   protection.removeEditors(protection.getEditors());
   if (protection.canDomainEdit()) protection.setDomainEdit(false);
 
-  // Mark transferred rows in source sheet (Column M)
-  rowsToMark.forEach(rowIndex => {
-    sourceSheet.getRange(rowIndex, transferredColumn).setValue(transferredMarker);
-  });
-
   Logger.log(`Transferred ${approvedRows.length} rows and marked them as "${transferredMarker}".`);
 }
 
-function onEdit(e) {
+function onEditHandler(e) {
+
+
   const sheet = e.range.getSheet();
   const editedColumn = e.range.getColumn();
-  const approvalSheetName = "Approval"; 
+  const approvalSheetName = "Approval";
   const approvalStatusColumn = 12; // Column L
+  const rowNumber = e.range.getRow();
+  const data = sheet.getRange(rowNumber, 1, 1, 15).getValues()[0]
+
 
   // Only trigger if we're on the Approval sheet, editing the Approval Status column
   if (sheet.getName() === approvalSheetName && editedColumn === approvalStatusColumn) {
     const ui = SpreadsheetApp.getUi();
     const cell = e.range;
     const newValue = cell.getValue();
+    const oldValue = e.oldValue || "";
+
 
     // Show confirmation dialog
     const response = ui.alert(
@@ -92,10 +96,20 @@ function onEdit(e) {
       ui.ButtonSet.OK_CANCEL
     );
 
+
     // If user cancels, revert to previous value
     if (response === ui.Button.CANCEL) {
-      cell.setValue(e.oldValue || ""); // revert to blank or previous
+      cell.setValue(oldValue);
       ui.alert("Action cancelled — no status change was saved.");
+    }
+    if (response === ui.Button.OK) {
+      const cleanValue = String(newValue).trim();
+      if (cleanValue == "Approved") {
+        sendEmailNotif("Approval", data[13].toString(), data[0].toString(), data[14].toString());
+      }
+      if (cleanValue == "Denied") {
+        sendEmailNotif("Rejection", data[13].toString(), data[0].toString(), data[14].toString());
+      }
     }
   }
 }
