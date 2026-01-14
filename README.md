@@ -1,4 +1,86 @@
-# Next.js Frontend
+# NOVA X SAVECANTO
+Collaboration between Nova, Tech for Good at UCLA and NPO SaveCantonese. 
+
+# Project Structure
+savecanto_map/
+├─ backend/
+│  └─ apps-script/
+│     └─ src/
+│        ├─ appsscript.json          # Google Apps Script project config
+│        ├─ config.js                # Configuration for Sheets / API
+│        ├─ migration.js             # Data migration utilities
+│        ├─ moveApprovedRows.js      # Moves approved rows between sheets
+│        ├─ routes.js                # Web endpoints for Apps Script
+│        └─ verifyWebsites.js        # Website verification logic
+│
+├─ frontend/                         # Next.js app
+│  ├─ package.json
+│  ├─ next.config.ts
+│  ├─ eslint.config.mjs
+│  ├─ postcss.config.mjs
+│  ├─ tsconfig.json
+│  ├─ public/                        # Static assets
+│  │  ├─ SaveCanto.jpeg
+│  │  ├─ globe.svg
+│  │  ├─ window.svg
+│  │  └─ ...
+│  └─ src/
+│     ├─ app/
+│     │  ├─ layout.tsx              # Root layout
+│     │  ├─ globals.css             # Global styles
+│     │  ├─ page.tsx                # Landing page / main entry
+│     │  ├─ map/                    # Interactive map experience
+│     │  │  ├─ components/
+│     │  │  │  ├─ BaseMap.tsx
+│     │  │  │  ├─ MapContainer.tsx
+│     │  │  │  ├─ ZoomControls.tsx
+│     │  │  │  ├─ SaveCantoIcon.tsx
+│     │  │  │  ├─ clusters/         # Cluster UI & donut charts
+│     │  │  │  │  ├─ ClusterLayer.tsx
+│     │  │  │  │  └─ ClusterMarker.tsx
+│     │  │  │  ├─ filters/          # Map filter UI + types
+│     │  │  │  │  ├─ CantoFilters.tsx
+│     │  │  │  │  ├─ CantoFiltersWrapper.tsx
+│     │  │  │  │  └─ types.ts
+│     │  │  │  ├─ panel/            # Side panel & program details
+│     │  │  │  │  ├─ SidePanel.tsx
+│     │  │  │  │  ├─ SelectedPrograms.tsx
+│     │  │  │  │  ├─ AdvancedDetails.tsx
+│     │  │  │  │  └─ types.ts
+│     │  │  │  └─ pins/             # Map pins & legend
+│     │  │  │     ├─ PinsLayer.tsx
+│     │  │  │     ├─ PinMarker.tsx
+│     │  │  │     ├─ Key.tsx        # Map legend / key
+│     │  │  │     └─ IconSet.tsx
+│     │  │  ├─ hooks/               # Map-specific hooks
+│     │  │  │  ├─ useCsvData.ts
+│     │  │  │  ├─ useFilters.ts
+│     │  │  │  ├─ useSelectedPrograms.ts
+│     │  │  │  └─ useZoom.ts
+│     │  │  └─ utils/               # Map utilities
+│     │  │     ├─ clusterUtils.ts
+│     │  │     ├─ filterUtils.ts
+│     │  │     ├─ geoUtils.ts
+│     │  │     ├─ loadPrograms.ts
+│     │  │     └─ programUtils.ts
+│     │  └─ table/                  # Table view of programs
+│     │     └─ components/
+│     │        ├─ table.tsx
+│     │        ├─ filterbar.tsx
+│     │        ├─ searchBar.tsx
+│     │        ├─ pagination.tsx
+│     │        └─ ui/
+│     │           ├─ button.tsx
+│     │           ├─ input.tsx
+│     │           ├─ select.tsx
+│     │           ├─ pagination.tsx
+│     │           └─ table.tsx
+│     └─ lib/
+│        └─ utils.ts                # Shared frontend utilities
+│
+└─ README.md
+
+# Environment Setup
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
