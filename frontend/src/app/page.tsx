@@ -9,6 +9,7 @@ import CantoTable from "./table/components/table";
 
 export default function Home() {
   const pinClickHandlerRef = useRef<((program: any) => void) | null>(null);
+  const [panelCloseSignal, setPanelCloseSignal] = useState(0);
   
   // Stable wrapper function that always calls the latest handler
   const handlePinClick = useCallback((program: any) => {
@@ -75,6 +76,7 @@ export default function Home() {
           <MapContainer 
             programs={csvData} 
             onPinClick={handlePinClick}
+            panelCloseSignal={panelCloseSignal}
           />
           
           {/* SidePanel manages its own state - fixed inside map container */}
@@ -85,6 +87,13 @@ export default function Home() {
             csvError={csvError}
             hasActiveFilters={hasActiveFilters}
             onPinClickHandlerReady={setPinClickHandler}
+            onPanelClose={() => setPanelCloseSignal((prev) => prev + 1)}
+            activeFilters={{
+              audience: audienceFilter,
+              province: provinceFilter,
+              city: cityFilter,
+              country: countryFilter,
+            }}
           />
         </div>
       </div>

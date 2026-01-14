@@ -122,6 +122,7 @@ const CantoFilters: React.FC<Props> = ({
                     </SelectItem>
                   );
                 }
+                
                 return <SelectItem 
                     key={option} 
                     value={option}

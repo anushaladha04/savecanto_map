@@ -30,9 +30,10 @@ interface Region {
 interface MapContainerProps {
   programs?: any[]; // Optional programs prop (for testing/backward compatibility)
   onPinClick?: (program: Program | any) => void; // Callback when a pin is clicked
+  panelCloseSignal?: number;
 }
 
-export default function MapContainer({ programs: externalPrograms, onPinClick }: MapContainerProps = {}) {
+export default function MapContainer({ programs: externalPrograms, onPinClick, panelCloseSignal }: MapContainerProps = {}) {
   const mapRef = useRef<MapRef | null>(null);
   const [programs, setPrograms] = useState<Program[]>([]);
   const [selectedRegion, setSelectedRegion] = useState<Region | null>(null);
@@ -112,6 +113,14 @@ export default function MapContainer({ programs: externalPrograms, onPinClick }:
     resetView();
     setSelectedRegion(null); // Clear selected region to show clusters again
   };
+
+  // If the side panel is closed, reset the map to the cluster view
+  useEffect(() => {
+    if (panelCloseSignal === undefined) {
+      return;
+    }
+    handleResetView();
+  }, [panelCloseSignal]);
 
   // Handle pin click - zoom to pin and notify parent
   const handlePinClick = (program: Program | any, latitude?: number, longitude?: number) => {
@@ -226,7 +235,9 @@ export default function MapContainer({ programs: externalPrograms, onPinClick }:
 
   return (
     <BaseMap mapRef={mapRef} onMoveEnd={handleMoveEnd}>
-      <Key />
+      <div className="absolute top-4 right-4 z-20">
+        <Key />
+      </div>
       {/* Hide clusters when a region is selected */}
       <ClusterLayer 
         onRegionSelect={handleRegionSelect} 
