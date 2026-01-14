@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from "react";
 import type { ProgramDetails } from "./types";
 import { MapPin } from "lucide-react";
+import { colorMap, type ProgramType } from "../pins/PinMarker";
 import {
   Pagination,
   PaginationContent,
@@ -23,6 +24,25 @@ interface SelectedProgramsProps {
     city?: string;
     country?: string;
   };
+}
+
+// Map human-readable category string to ProgramType used by pins/key
+function mapCategoryToProgramType(category: string): ProgramType {
+  const cleaned = category
+    ?.toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z]/g, "") || "";
+
+  if (cleaned.includes("adult")) {
+    return "adults";
+  }
+  if (cleaned.includes("child") || cleaned.includes("teen")) {
+    return "kids";
+  }
+  if (cleaned.includes("college") && cleaned.includes("university")) {
+    return "college";
+  }
+  return "other";
 }
 
 /*
@@ -105,20 +125,22 @@ export function SelectedPrograms({
           <div className="text-lg font-medium text-gray-900">
             Results for
           </div>
-          {activeFilterLabels.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {activeFilterLabels.map((label, index) => (
+          <div className="flex flex-wrap gap-2">
+            {activeFilterLabels.length > 0 ? (
+              activeFilterLabels.map((label, index) => (
                 <span
                   key={index}
                   className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200"
                 >
                   {label}
                 </span>
-              ))}
-            </div>
-          ) : (
-            <div className="text-xs text-gray-900">All Programs</div>
-          )}
+              ))
+            ) : (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">
+                All Programs
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -131,7 +153,7 @@ export function SelectedPrograms({
             <div className="space-y-3">
               {currentPrograms.map((p) => (
                 <div
-                  key={p.id ?? p.name}
+                  key={p.id ?? (p.csvIndex !== undefined ? `csv-${p.csvIndex}` : p.name)}
                   className="w-full bg-[#F6F7FA] text-left p-4 rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all focus-within:ring-2 focus-within:ring-black focus-within:ring-offset-2 flex flex-col gap-2"
                 >
                   <div className="flex items-center justify-between">
@@ -147,12 +169,20 @@ export function SelectedPrograms({
                       aria-hidden
                     />
                   <div className="flex-1 break-words">
-                    {p.address ?? p.city ?? "No address available"}
+                    {p.address?.trim() || p.city?.trim() || "No location found"}
                   </div>
                   </div>
 
                   {p.category && (
-                    <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-900 border border-gray-300 w-fit">
+                    <div
+                      className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border w-fit"
+                      style={{
+                        color: colorMap[mapCategoryToProgramType(p.category)],
+                        borderColor:
+                          colorMap[mapCategoryToProgramType(p.category)],
+                        backgroundColor: "#FFFFFF",
+                      }}
+                    >
                       {p.category}
                     </div>
                   )}

@@ -14,7 +14,7 @@ interface KeyItem {
 
 const keyData: KeyItem[] = [
   { type: 'adults', label: 'Adults' },
-  { type: 'kids', label: 'Children/Teens' },
+  { type: 'kids', label: 'Children & Teens' },
   { type: 'college', label: 'College/University' },
   { type: 'other', label: 'Other' },
 ];
@@ -38,7 +38,9 @@ function IconCircle({ type }: { type: ProgramType }) {
 export default function Key() {
   return (
     <div className="bg-white rounded-lg shadow-md p-4 w-fit">
-      <h3 className="text-base font-semibold mb-2" style={{ color: '#333' }}>Program Types</h3>
+      <h3 className="text-base font-semibold mb-3 text-center" style={{ color: '#333' }}>
+        Program Types
+      </h3>
       
       <div className="space-y-2">
         
@@ -49,7 +51,7 @@ export default function Key() {
               <IconCircle type={item.type} />
             </div>
             
-            {/* Label - same color as icon */}
+            {/* Label - same color as icon, matching app body font */}
             <span className="text-sm font-medium" style={{ color: colorMap[item.type] }}>
               {item.label}
             </span>

@@ -10,6 +10,7 @@ import CantoTable from "./table/components/table";
 export default function Home() {
   const pinClickHandlerRef = useRef<((program: any) => void) | null>(null);
   const [panelCloseSignal, setPanelCloseSignal] = useState(0);
+  const [programToZoom, setProgramToZoom] = useState<{ lat: number; lng: number } | null>(null);
   
   // Stable wrapper function that always calls the latest handler
   const handlePinClick = useCallback((program: any) => {
@@ -77,6 +78,7 @@ export default function Home() {
             programs={csvData} 
             onPinClick={handlePinClick}
             panelCloseSignal={panelCloseSignal}
+            programToZoom={programToZoom}
           />
           
           {/* SidePanel manages its own state - fixed inside map container */}
@@ -87,7 +89,11 @@ export default function Home() {
             csvError={csvError}
             hasActiveFilters={hasActiveFilters}
             onPinClickHandlerReady={setPinClickHandler}
-            onPanelClose={() => setPanelCloseSignal((prev) => prev + 1)}
+            onPanelClose={() => {
+              setPanelCloseSignal((prev) => prev + 1);
+              setProgramToZoom(null); // Clear zoom target when panel closes
+            }}
+            onProgramZoom={(lat, lng) => setProgramToZoom({ lat, lng })}
             activeFilters={{
               audience: audienceFilter,
               province: provinceFilter,

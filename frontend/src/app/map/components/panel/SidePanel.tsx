@@ -10,6 +10,7 @@ import { SelectedPrograms } from "./SelectedPrograms";
 import type { ProgramDetails } from "./types";
 import type { CsvRow } from "../filters/types";
 import { Globe, ExternalLink } from "lucide-react";
+import { applyFilters } from "../../utils/filterUtils";
 
 interface SidePanelProps {
   csvData: CsvRow[];
@@ -22,6 +23,8 @@ interface SidePanelProps {
   onPinClickHandlerReady?: (handler: (program: any) => void) => void;
   // Notify parent when panel is explicitly closed
   onPanelClose?: () => void;
+  // Request map zoom to a specific program location
+  onProgramZoom?: (lat: number, lng: number) => void;
   // Active filter values to display
   activeFilters?: {
     audience?: string;
@@ -39,6 +42,7 @@ export function SidePanel({
   hasActiveFilters = false,
   onPinClickHandlerReady,
   onPanelClose,
+  onProgramZoom,
   activeFilters = {},
 }: SidePanelProps) {
   // Internal state management
@@ -52,20 +56,27 @@ export function SidePanel({
   // Use original CSV index for IDs to match with handlePinClick
   const csvToProgramDetails = (csvRows: CsvRow[], originalCsvData: CsvRow[]): ProgramDetails[] => {
     return csvRows.map((row: any) => {
-      // Find the index in the original CSV data
-      const originalIndex = originalCsvData.findIndex((originalRow: any) => {
-        const rowLat = typeof row.Latitude === 'string' ? parseFloat(row.Latitude) : row.Latitude;
-        const rowLng = typeof row.Longitude === 'string' ? parseFloat(row.Longitude) : row.Longitude;
-        const originalLat = typeof originalRow.Latitude === 'string' ? parseFloat(originalRow.Latitude) : originalRow.Latitude;
-        const originalLng = typeof originalRow.Longitude === 'string' ? parseFloat(originalRow.Longitude) : originalRow.Longitude;
-        const nameMatch = row.Name === originalRow.Name;
-        const latMatch = !isNaN(rowLat) && !isNaN(originalLat) && Math.abs(rowLat - originalLat) < 0.0001;
-        const lngMatch = !isNaN(rowLng) && !isNaN(originalLng) && Math.abs(rowLng - originalLng) < 0.0001;
-        return nameMatch || (latMatch && lngMatch);
-      });
+      // Prefer a stable index when the row object is a direct reference from csvData
+      // (applyFilters returns rows from the original array, so indexOf should work and is unique).
+      let originalIndex = originalCsvData.indexOf(row as any);
+
+      // Fallback: compute a best-effort match by (name OR lat/lng)
+      if (originalIndex === -1) {
+        originalIndex = originalCsvData.findIndex((originalRow: any) => {
+          const rowLat = typeof row.Latitude === 'string' ? parseFloat(row.Latitude) : row.Latitude;
+          const rowLng = typeof row.Longitude === 'string' ? parseFloat(row.Longitude) : row.Longitude;
+          const originalLat = typeof originalRow.Latitude === 'string' ? parseFloat(originalRow.Latitude) : originalRow.Latitude;
+          const originalLng = typeof originalRow.Longitude === 'string' ? parseFloat(originalRow.Longitude) : originalRow.Longitude;
+          const nameMatch = row.Name === originalRow.Name;
+          const latMatch = !isNaN(rowLat) && !isNaN(originalLat) && Math.abs(rowLat - originalLat) < 0.0001;
+          const lngMatch = !isNaN(rowLng) && !isNaN(originalLng) && Math.abs(rowLng - originalLng) < 0.0001;
+          return nameMatch || (latMatch && lngMatch);
+        });
+      }
       
       return {
         id: originalIndex !== -1 ? `csv-${originalIndex}` : `csv-${csvRows.indexOf(row)}`,
+        csvIndex: originalIndex !== -1 ? originalIndex : undefined,
         name: row.Name || "",
         city: row.City || "",
         email: row.Email || "",
@@ -73,14 +84,27 @@ export function SidePanel({
         category: row.Audience || "",
         website: row.Website || "",
         address: row.Address || "",
+        latitude: typeof row.Latitude === 'string' ? parseFloat(row.Latitude) : row.Latitude,
+        longitude: typeof row.Longitude === 'string' ? parseFloat(row.Longitude) : row.Longitude,
       };
     });
   };
 
-  // Use filtered data from parent - this will update when filters change
+  // Use the same filtering logic as the table (applyFilters) so behavior matches exactly.
+  // This ignores the filteredData prop and recomputes filtering from csvData + activeFilters.
+  const panelFilteredCsv = useMemo(() => {
+    return applyFilters(csvData, {
+      searchTerm: "",
+      audience: activeFilters.audience || "all",
+      province: activeFilters.province || "all",
+      city: activeFilters.city || "all",
+      country: activeFilters.country || "all",
+    });
+  }, [csvData, activeFilters]);
+
   const allPrograms = useMemo(() => {
-    return csvToProgramDetails(filteredData, csvData);
-  }, [filteredData, csvData]);
+    return csvToProgramDetails(panelFilteredCsv, csvData);
+  }, [panelFilteredCsv, csvData]);
 
   // UI state: if a program is selected the panel shows AdvancedDetails; otherwise show the list
   const [selectedProgram, setSelectedProgram] = useState<ProgramDetails | null>(null);
@@ -168,14 +192,43 @@ export function SidePanel({
 
     if (!selectedProgramId) return;
 
-    // prefer local match first (including CSV programs)
+    // If this is a CSV-backed program (id like "csv-10"), resolve it directly
+    // from the local csvData instead of going through loadPrograms.
+    if (selectedProgramId.startsWith("csv-")) {
+      const indexStr = selectedProgramId.replace("csv-", "");
+      const index = parseInt(indexStr, 10);
+
+      if (!Number.isNaN(index) && index >= 0 && index < csvData.length) {
+        const row = csvData[index] as any;
+        const localProgram: ProgramDetails = {
+          id: `csv-${index}`,
+          name: row.Name || "",
+          city: row.City || "",
+          email: row.Email || "",
+          phoneNumber: row["Phone Number"] || "",
+          category: row.Audience || "",
+          website: row.Website || "",
+          address: row.Address || "",
+        };
+        setSelectedProgram(localProgram);
+        setError(null);
+        setIsLoading(false);
+        return;
+      } else {
+        setError(new Error("Program not found"));
+        setIsLoading(false);
+        return;
+      }
+    }
+
+    // For non-CSV IDs, prefer local match first (e.g., API-backed programs)
     const local = allPrograms.find((p) => p.id === selectedProgramId);
     if (local) {
       setSelectedProgram(local);
       return;
     }
 
-    // otherwise try to fetch and resolve the programId
+    // Otherwise try to fetch and resolve the programId from remote
     let cancelled = false;
     setIsLoading(true);
 
@@ -233,6 +286,9 @@ export function SidePanel({
 
   const handleSelectProgram = (p: ProgramDetails) => {
     setSelectedProgram(p);
+    if (p.latitude && p.longitude && !isNaN(p.latitude) && !isNaN(p.longitude)) {
+      onProgramZoom?.(p.latitude, p.longitude);
+    }
   };
 
   const handleCloseDetails = () => {

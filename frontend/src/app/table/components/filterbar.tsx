@@ -39,12 +39,13 @@ const CantoFilters = ({
   uniqueCities,
 }: CantoFilterProps) => {
   const AudienceOptions = ["Adults", "Children & Teens", "College / University"];
-
+ 
+  // Order filters to match the map: Program Type (Age Group) → Country → State/Province → City
   const filters = [
     { label: "Age Group", value: audienceFilter, setValue: setAudienceFilter, options: AudienceOptions, placeholder: "Select an Audience", isCountry: false },
-    { label: "City", value: cityFilter, setValue: setCityFilter, options: uniqueCities, placeholder: "Select a City", isCountry: false },
     { label: "Country", value: countryFilter, setValue: setCountryFilter, options: allCountryCodes, placeholder: "Select a Country", isCountry: true },
     { label: "State/Province", value: provinceFilter, setValue: setProvinceFilter, options: uniqueProvinces, placeholder: "Select a State/Province", isCountry: false },
+    { label: "City", value: cityFilter, setValue: setCityFilter, options: uniqueCities, placeholder: "Select a City", isCountry: false },
   ];
 
   return (

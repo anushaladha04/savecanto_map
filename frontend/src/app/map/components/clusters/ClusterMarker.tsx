@@ -33,33 +33,33 @@ export default function ClusterMarker({
     onRegionSelect(cluster);
   };
 
-  // Calculate marker size based on point count
-  // Scale from minSize to maxSize based on point count
-  const minSize = 28;
-  const maxSize = 35; // Reduced to prevent overlap
-  const minPoints = 1;
-  const maxPoints = 48; // Based on current data range
-  
-  // Use logarithmic scaling for more conservative size increase
-  // This prevents large clusters from becoming too big and overlapping
-  const normalizedCount = (cluster.pointCount - minPoints) / (maxPoints - minPoints);
-  // Logarithmic scale: log(1 + normalizedCount * (e-1)) / log(e)
-  // This gives a more gradual curve that prevents large jumps
-  const logScale = Math.log(1 + normalizedCount * (Math.E - 1)) / Math.log(Math.E);
-  const scaledSize = minSize + (maxSize - minSize) * logScale;
-  const markerSize = Math.max(minSize, Math.min(maxSize, scaledSize));
-  
-  const radius = markerSize / 2;
-  const innerRadius = radius * 0.4; // Donut hole size
-  const outerRadius = radius * 0.95; // Outer edge of donut (slightly smaller than radius for padding)
-
-  // Get program type breakdown - always ensure we have a breakdown object
+  // Calculate marker size based on program count
+  // Use actual program count from breakdown if available, otherwise use pointCount
   const breakdown = cluster.programTypeBreakdown || {
     adults: 0,
     kids: 0,
     college: 0,
     other: 0,
   };
+  const programCount = breakdown.adults + breakdown.kids + breakdown.college + breakdown.other || cluster.pointCount;
+  
+  // Scale from minSize to maxSize based on program count
+  const minSize = 32;
+  const maxSize = 60; // Larger range for more visible differences
+  const minPrograms = 1;
+  const maxPrograms = 50; // Based on current data range
+  
+  // Use square root scaling for proportional but visible size differences
+  // This gives a nice balance: smaller clusters are noticeably different,
+  // but large clusters don't become too huge
+  const normalizedCount = Math.max(0, Math.min(1, (programCount - minPrograms) / (maxPrograms - minPrograms)));
+  const sqrtScale = Math.sqrt(normalizedCount); // Square root for smoother scaling
+  const scaledSize = minSize + (maxSize - minSize) * sqrtScale;
+  const markerSize = Math.max(minSize, Math.min(maxSize, scaledSize));
+  
+  const radius = markerSize / 2;
+  const innerRadius = radius * 0.4; // Donut hole size
+  const outerRadius = radius * 0.95; // Outer edge of donut (slightly smaller than radius for padding)
 
   // Calculate total count from breakdown
   const totalCount = breakdown.adults + breakdown.kids + breakdown.college + breakdown.other;
