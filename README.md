@@ -2,37 +2,32 @@
 
 Collaboration between Nova, Tech for Good at UCLA and NPO SaveCantonese.
 
-# Project Structure
+## Project Structure
 
 ```text
 savecanto_map/
-├─ backend/
+├─ backend/                      # Google Apps Script backend
 │  └─ apps-script/
 │     └─ src/
-│        ├─ appsscript.json      # Apps Script project config
-│        ├─ config.js            # Sheets & API configuration
-│        ├─ routes.js            # HTTP endpoints
+│        ├─ appsscript.json     # Apps Script project config
+│        ├─ config.js           # Sheets & API configuration
+│        ├─ email.js            # Email notifications / alerts
+│        ├─ migration.js        # Data migration helpers
 │        ├─ moveApprovedRows.js # Sheet data management
+│        ├─ routes.js           # HTTP endpoints
 │        └─ verifyWebsites.js   # Website verification
 │
-└─ frontend/                      # Next.js app
-   ├─ public/                     # Static assets
+└─ frontend/                     # Next.js frontend (map + table UI)
+   ├─ public/                    # Static assets (images, icons)
    └─ src/
       ├─ app/
-      │  ├─ map/                  # Interactive map experience
-      │  │  ├─ components/
-      │  │  │  ├─ BaseMap.tsx
-      │  │  │  ├─ MapContainer.tsx
-      │  │  │  ├─ clusters/       # Cluster markers & donut charts
-      │  │  │  ├─ filters/        # Map filter UI
-      │  │  │  ├─ panel/          # Side panel & program details
-      │  │  │  └─ pins/          # Map pins & legend
-      │  │  ├─ hooks/             # useCsvData, useFilters, useZoom, etc.
-      │  │  └─ utils/             # Cluster, filter, geo utilities
-      │  └─ table/                # Table view of programs
-      │     └─ components/        # Table, filters, pagination
-      └─ lib/
-         └─ utils.ts              # Shared utilities
+      │  ├─ map/                 # Interactive map experience
+      │  │  ├─ components/       # Base map, clusters, pins, side panel
+      │  │  ├─ hooks/            # useCsvData, useFilters, useZoom, etc.
+      │  │  └─ utils/            # Cluster, filter, geo helpers
+      │  └─ table/               # Program table view + filters
+      └─ lib/                    # Shared frontend utilities
+         └─ utils.ts
 ```
 
 # Environment Setup
@@ -76,7 +71,15 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 # Google Apps Script Backend
 
-This is the backend API for SaveCanto Map, built with Google Apps Script.
+This is the backend API for SaveCanto Map, built with Google Apps Script and managed in `backend/apps-script/src`.
+
+Key files:
+
+- `appsscript.json` – Apps Script project configuration
+- `config.js` – sheet IDs, ranges, and other config
+- `routes.js` – HTTP endpoints for the web app
+- `moveApprovedRows.js` – moves approved rows between sheets
+- `verifyWebsites.js` – checks and validates program websites
 
 ## Getting Started
 
@@ -91,29 +94,28 @@ Then, enable the Apps Script API:
 1. Visit https://script.google.com/home/usersettings
 2. Toggle ON "Google Apps Script API"
 
-Login and create your project:
+Authenticate and link this folder:
 
 ```bash
-clasp login
-clasp create --title "SaveCanto Map" --type standalone
+cd backend/apps-script
+clasp login           # one-time Google auth
+clasp open            # opens the linked Apps Script project
 ```
 
-Push your code to Apps Script:
+## Syncing Code
+
+Pull the latest code from Apps Script into this repo:
 
 ```bash
+cd backend/apps-script
+clasp pull
+```
+
+Push local changes up to Apps Script:
+
+```bash
+cd backend/apps-script
 clasp push
 ```
 
-Your API is now deployed! Get your test URL from https://script.google.com → Deploy → Test deployments.
-
-The test URL will look like: `https://script.google.com/macros/s/.../dev`
-
-## Development
-
-You can start editing the API by modifying `src/Code.js`. After making changes, push updates:
-
-```bash
-clasp push
-```
-
-The `/dev` endpoint automatically uses your latest code without redeploying.
+Your test URL is available from https://script.google.com → Deploy → Test deployments (it looks like `https://script.google.com/macros/s/.../dev`).
