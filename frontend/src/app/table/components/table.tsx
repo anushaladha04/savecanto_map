@@ -45,7 +45,7 @@ const CantoTable = ({
   distanceUnit = 'miles',
   onDistanceFilterChange,
   onDistanceUnitChange,
-}: CantoTableProps = {}) => {
+}: CantoTableProps) => {
   const sheetURL =
     'https://docs.google.com/spreadsheets/d/e/2PACX-1vTLxKh_BgtzfkkUmcixsAzj4MWgh3K--aigbSVzBIq7qw7FVhZVVz9xx4IwspHzVFl92QnlDYftxPBu/pub?gid=0&single=true&output=csv';
   const [data, setData] = useState<(CsvRow & { key: number })[]>([]);

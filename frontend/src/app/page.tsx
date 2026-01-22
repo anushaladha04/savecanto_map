@@ -58,8 +58,10 @@ export default function Home() {
 
     return baseFilteredData.filter(row => {
       // Extract coordinates from CSV row
-      const lat = parseFloat(row.Latitude || row.latitude || '');
-      const lng = parseFloat(row.Longitude || row.longitude || '');
+      const latValue = row.Latitude;
+      const lngValue = row.Longitude;
+      const lat = typeof latValue === 'string' ? parseFloat(latValue) : (typeof latValue === 'number' ? latValue : NaN);
+      const lng = typeof lngValue === 'string' ? parseFloat(lngValue) : (typeof lngValue === 'number' ? lngValue : NaN);
       
       if (isNaN(lat) || isNaN(lng)) {
         return false; // Skip rows without valid coordinates

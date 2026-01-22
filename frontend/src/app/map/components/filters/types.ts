@@ -9,6 +9,8 @@ export interface CsvRow {
   Website: string;
   Email: string;
   "Phone Number": string;
+  Latitude?: string | number;
+  Longitude?: string | number;
 }
 // Filter values for the dataset
 export interface Filters {

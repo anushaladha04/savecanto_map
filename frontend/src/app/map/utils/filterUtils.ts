@@ -4,7 +4,14 @@ import countries from 'i18n-iso-countries';
 
 // Get unique, sorted values for a given column
 export const getUniqueValues = (data: CsvRow[], key: keyof CsvRow): string[] => {
-  return Array.from(new Set(data.map(row => row[key]).filter(Boolean))).sort();
+  return Array.from(
+    new Set(
+      data
+        .map(row => row[key])
+        .filter((value): value is string => Boolean(value))
+        .map(value => String(value))
+    )
+  ).sort();
 };
 
 // Helper function to normalize audience strings for comparison
