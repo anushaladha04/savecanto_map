@@ -161,6 +161,17 @@ const CantoTable = ({
 
   return (
     <div className="space-y-4">
+      {onDistanceFilterChange && onDistanceUnitChange && (
+        <div className="flex items-center">
+          <DistanceFilter
+            distance={distanceFilter}
+            setDistance={onDistanceFilterChange}
+            unit={distanceUnit}
+            setUnit={onDistanceUnitChange}
+            userLocation={userLocation}
+          />
+        </div>
+      )}
       <div className="flex items-end justify-between">
         <TableFilters
           audienceFilter={audienceFilter}
@@ -176,17 +187,6 @@ const CantoTable = ({
         />
         <SearchBar value={searchTerm} onChange={setSearchTerm} />
       </div>
-      {onDistanceFilterChange && onDistanceUnitChange && (
-        <div className="flex items-center">
-          <DistanceFilter
-            distance={distanceFilter}
-            setDistance={onDistanceFilterChange}
-            unit={distanceUnit}
-            setUnit={onDistanceUnitChange}
-            userLocation={userLocation}
-          />
-        </div>
-      )}
 
       <Table className="table-fixed w-full">
         <TableHeader style={{ backgroundColor: '#F5F7FA' }}>
