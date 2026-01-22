@@ -32,9 +32,10 @@ interface MapContainerProps {
   onPinClick?: (program: Program | any) => void; // Callback when a pin is clicked
   panelCloseSignal?: number;
   programToZoom?: { lat: number; lng: number } | null;
+  onUserLocationChange?: (location: { lat: number; lng: number } | null) => void;
 }
 
-export default function MapContainer({ programs: externalPrograms, onPinClick, panelCloseSignal, programToZoom }: MapContainerProps = {}) {
+export default function MapContainer({ programs: externalPrograms, onPinClick, panelCloseSignal, programToZoom, onUserLocationChange }: MapContainerProps = {}) {
   const mapRef = useRef<MapRef | null>(null);
   const [programs, setPrograms] = useState<Program[]>([]);
   const [selectedRegion, setSelectedRegion] = useState<Region | null>(null);
@@ -294,7 +295,12 @@ export default function MapContainer({ programs: externalPrograms, onPinClick, p
         const { latitude, longitude } = position.coords;
         
         // Store user location
-        setUserLocation({ lat: latitude, lng: longitude });
+        const location = { lat: latitude, lng: longitude };
+        setUserLocation(location);
+        // Notify parent component
+        if (onUserLocationChange) {
+          onUserLocationChange(location);
+        }
         
         // Zoom to user location
         zoomToCoordinates(longitude, latitude, 9);

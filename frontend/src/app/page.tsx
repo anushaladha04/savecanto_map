@@ -1,16 +1,20 @@
 "use client";
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useMemo } from 'react';
 import MapContainer from './map/components/MapContainer';
 import { SidePanel } from './map/components/panel/SidePanel';
 import { useFilters } from './map/hooks/useFilters';
 import { useCsvData } from './map/hooks/useCsvData';
 import CantoFilters from './map/components/filters/CantoFilters';
 import CantoTable from "./table/components/table";
+import { calculateDistance } from './map/utils/geoUtils';
 
 export default function Home() {
   const pinClickHandlerRef = useRef<((program: any) => void) | null>(null);
   const [panelCloseSignal, setPanelCloseSignal] = useState(0);
   const [programToZoom, setProgramToZoom] = useState<{ lat: number; lng: number } | null>(null);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [distanceFilter, setDistanceFilter] = useState<number | null>(null);
+  const [distanceUnit, setDistanceUnit] = useState<'miles' | 'km'>('miles');
   
   // Stable wrapper function that always calls the latest handler
   const handlePinClick = useCallback((program: any) => {
@@ -38,14 +42,40 @@ export default function Home() {
     setCity,
     countryFilter,
     setCountry,
-    filteredData,
+    filteredData: baseFilteredData,
   } = useFilters(csvData);
+
+  // Apply distance filter if user location is available
+  const filteredData = useMemo(() => {
+    if (!distanceFilter || !userLocation) {
+      return baseFilteredData;
+    }
+
+    // Convert distance to kilometers
+    const maxDistanceKm = distanceUnit === 'miles' 
+      ? distanceFilter * 1.60934 
+      : distanceFilter;
+
+    return baseFilteredData.filter(row => {
+      // Extract coordinates from CSV row
+      const lat = parseFloat(row.Latitude || row.latitude || '');
+      const lng = parseFloat(row.Longitude || row.longitude || '');
+      
+      if (isNaN(lat) || isNaN(lng)) {
+        return false; // Skip rows without valid coordinates
+      }
+
+      const distance = calculateDistance(userLocation.lat, userLocation.lng, lat, lng);
+      return distance <= maxDistanceKm;
+    });
+  }, [baseFilteredData, distanceFilter, distanceUnit, userLocation]);
 
   // Check if any filters are active
   const hasActiveFilters = audienceFilter !== '' ||
     provinceFilter !== '' ||
     cityFilter !== '' ||
-    countryFilter !== '';
+    countryFilter !== '' ||
+    (distanceFilter !== null && userLocation !== null);
 
   return (
     <main className="min-h-screen grid place-items-center p-10 gap-10">
@@ -61,24 +91,25 @@ export default function Home() {
       {/* Filters at the top level */}
       <div className="w-[90vw] mt-7">
         <div className="mb-2">
-        <CantoFilters
-          data={csvData}
-          audienceFilter={audienceFilter}
-          setAudienceFilter={setAudience}
-          provinceFilter={provinceFilter}
-          setProvinceFilter={setProvince}
-          cityFilter={cityFilter}
-          setCityFilter={setCity}
-          countryFilter={countryFilter}
-          setCountryFilter={setCountry}
-        />
+          <CantoFilters
+            data={csvData}
+            audienceFilter={audienceFilter}
+            setAudienceFilter={setAudience}
+            provinceFilter={provinceFilter}
+            setProvinceFilter={setProvince}
+            cityFilter={cityFilter}
+            setCityFilter={setCity}
+            countryFilter={countryFilter}
+            setCountryFilter={setCountry}
+          />
         </div>
         <div className="relative w-[90vw] h-[80vh]">
           <MapContainer 
-            programs={csvData} 
+            programs={filteredData} 
             onPinClick={handlePinClick}
             panelCloseSignal={panelCloseSignal}
             programToZoom={programToZoom}
+            onUserLocationChange={setUserLocation}
           />
           
           {/* SidePanel manages its own state - fixed inside map container */}
@@ -105,7 +136,13 @@ export default function Home() {
       </div>
       
       <div className="w-[90vw]">
-        <CantoTable />
+        <CantoTable 
+          userLocation={userLocation}
+          distanceFilter={distanceFilter}
+          distanceUnit={distanceUnit}
+          onDistanceFilterChange={setDistanceFilter}
+          onDistanceUnitChange={setDistanceUnit}
+        />
       </div>
 
       <div className="text-center">

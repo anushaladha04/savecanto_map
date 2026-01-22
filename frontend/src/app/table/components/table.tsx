@@ -7,12 +7,14 @@ import {
   TableHeader,
   TableRow,
 } from './ui/table';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Papa from 'papaparse';
 import SearchBar from './searchBar';
 import TableFilters from './filterbar';
 import TablePagination from './pagination';
 import { ArrowUpDown, SortAscIcon, SortDescIcon } from 'lucide-react';
+import DistanceFilter from '../../map/components/filters/DistanceFilter';
+import { calculateDistance } from '../../map/utils/geoUtils';
 
 interface CsvRow {
   Name: string;
@@ -22,12 +24,28 @@ interface CsvRow {
   Country: string;
   Address: string;
   Website: string;
+  Latitude?: string | number;
+  Longitude?: string | number;
 }
 
 type SortKey = 'Name' | 'Audience' | 'City' | 'State/Province' | 'Country' | 'Address' | 'Website';
 type SortOrder = 'default' | 'asc' | 'desc';
 
-const CantoTable = () => {
+interface CantoTableProps {
+  userLocation?: { lat: number; lng: number } | null;
+  distanceFilter?: number | null;
+  distanceUnit?: 'miles' | 'km';
+  onDistanceFilterChange?: (distance: number | null) => void;
+  onDistanceUnitChange?: (unit: 'miles' | 'km') => void;
+}
+
+const CantoTable = ({
+  userLocation = null,
+  distanceFilter = null,
+  distanceUnit = 'miles',
+  onDistanceFilterChange,
+  onDistanceUnitChange,
+}: CantoTableProps = {}) => {
   const sheetURL =
     'https://docs.google.com/spreadsheets/d/e/2PACX-1vTLxKh_BgtzfkkUmcixsAzj4MWgh3K--aigbSVzBIq7qw7FVhZVVz9xx4IwspHzVFl92QnlDYftxPBu/pub?gid=0&single=true&output=csv';
   const [data, setData] = useState<(CsvRow & { key: number })[]>([]);
@@ -71,15 +89,43 @@ const CantoTable = () => {
   const uniqueCities = Array.from(new Set(data.map(row => row.City).filter(Boolean))).sort();
 
   // Apply filters
-  const filteredData = data.filter(row => {
-    const matchesSearch = row.Name?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesAudience = audienceFilter === 'all' || row.Audience === audienceFilter;
-    const matchesProvince = provinceFilter === 'all' || row['State/Province'] === provinceFilter;
-    const matchesCity = cityFilter === 'all' || row.City === cityFilter;
-    const matchesCountry = countryFilter === 'all' || row.Country === countryFilter;
+  const filteredData = useMemo(() => {
+    let result = data.filter(row => {
+      // Search across all columns
+      const searchLower = searchTerm.toLowerCase();
+      const matchesSearch = searchTerm === '' || 
+        Object.values(row).some(value => 
+          value?.toString().toLowerCase().includes(searchLower)
+        );
+      const matchesAudience = audienceFilter === 'all' || row.Audience === audienceFilter;
+      const matchesProvince = provinceFilter === 'all' || row['State/Province'] === provinceFilter;
+      const matchesCity = cityFilter === 'all' || row.City === cityFilter;
+      const matchesCountry = countryFilter === 'all' || row.Country === countryFilter;
 
-    return matchesSearch && matchesAudience && matchesProvince && matchesCity && matchesCountry;
-  });
+      return matchesSearch && matchesAudience && matchesProvince && matchesCity && matchesCountry;
+    });
+
+    // Apply distance filter if user location is available
+    if (distanceFilter && userLocation) {
+      const maxDistanceKm = distanceUnit === 'miles' 
+        ? distanceFilter * 1.60934 
+        : distanceFilter;
+
+      result = result.filter(row => {
+        const lat = parseFloat(String(row.Latitude || ''));
+        const lng = parseFloat(String(row.Longitude || ''));
+        
+        if (isNaN(lat) || isNaN(lng)) {
+          return false; // Skip rows without valid coordinates
+        }
+
+        const distance = calculateDistance(userLocation.lat, userLocation.lng, lat, lng);
+        return distance <= maxDistanceKm;
+      });
+    }
+
+    return result;
+  }, [data, searchTerm, audienceFilter, provinceFilter, cityFilter, countryFilter, distanceFilter, distanceUnit, userLocation]);
 
   // Apply sorting
   const sortedData = sortKey
@@ -130,6 +176,17 @@ const CantoTable = () => {
         />
         <SearchBar value={searchTerm} onChange={setSearchTerm} />
       </div>
+      {onDistanceFilterChange && onDistanceUnitChange && (
+        <div className="flex items-center">
+          <DistanceFilter
+            distance={distanceFilter}
+            setDistance={onDistanceFilterChange}
+            unit={distanceUnit}
+            setUnit={onDistanceUnitChange}
+            userLocation={userLocation}
+          />
+        </div>
+      )}
 
       <Table className="table-fixed w-full">
         <TableHeader style={{ backgroundColor: '#F5F7FA' }}>
