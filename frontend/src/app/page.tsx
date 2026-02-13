@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, useCallback, useMemo } from 'react';
+import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import MapContainer from './map/components/MapContainer';
 import { SidePanel } from './map/components/panel/SidePanel';
 import { useFilters } from './map/hooks/useFilters';
@@ -15,7 +15,33 @@ export default function Home() {
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [distanceFilter, setDistanceFilter] = useState<number | null>(null);
   const [distanceUnit, setDistanceUnit] = useState<'miles' | 'km'>('miles');
-  
+  const [showLocationPrompt, setShowLocationPrompt] = useState(false);
+
+  // On every reload: show SaveCanto location prompt (no memory of block)
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('geolocation' in navigator) || !window.isSecureContext) return;
+    if (userLocation) return; // already have location this session
+    const id = setTimeout(() => setShowLocationPrompt(true), 500);
+    return () => clearTimeout(id);
+  }, [userLocation]);
+
+  const handleLocationAllow = useCallback(() => {
+    setShowLocationPrompt(false);
+    if (typeof window === 'undefined' || !('geolocation' in navigator)) return;
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setUserLocation({ lat: latitude, lng: longitude });
+      },
+      () => {},
+      { enableHighAccuracy: false, timeout: 20000, maximumAge: 0 }
+    );
+  }, []);
+
+  const handleLocationBlock = useCallback(() => {
+    setShowLocationPrompt(false);
+  }, []);
+
   // Stable wrapper function that always calls the latest handler
   const handlePinClick = useCallback((program: any) => {
     if (pinClickHandlerRef.current) {
@@ -81,6 +107,54 @@ export default function Home() {
 
   return (
     <main className="min-h-screen grid place-items-center p-10 gap-10">
+      {/* SaveCanto location permission prompt */}
+      {showLocationPrompt && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50" aria-modal="true" role="dialog">
+          <div className="relative bg-white rounded-2xl shadow-2xl p-6 min-w-[320px] max-w-[380px] border border-gray-200">
+            <button
+              type="button"
+              onClick={handleLocationBlock}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-1"
+              aria-label="Close"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+            </button>
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-xl font-semibold" style={{ color: '#F98A1B' }}>Save Cantonese</span>
+            </div>
+            <p className="text-gray-600 text-sm mb-1">SaveCanto Map would like to</p>
+            <div className="flex items-center gap-3 mb-6">
+              <span className="text-gray-700" aria-hidden>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
+                  <circle cx="12" cy="9" r="2.5" />
+                </svg>
+              </span>
+              <span className="text-gray-900 font-medium">use your location</span>
+            </div>
+            <p className="text-gray-500 text-xs mb-5">to show programs near you and filter by distance</p>
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={handleLocationBlock}
+                className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 font-medium"
+              >
+                Block
+              </button>
+              <button
+                type="button"
+                onClick={handleLocationAllow}
+                className="px-4 py-2 rounded-lg font-medium text-white hover:opacity-90"
+                style={{ backgroundColor: '#F98A1B' }}
+              >
+                Allow
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <p className="w-[85vw]">Many Cantonese learners still struggle to learn the language, in part because educational institutions that offer Cantonese classes are difficult to find.
         This map and database are a response to this critical need. Find a Cantonese program near you, and enroll today! To find a program, consult the map and
@@ -112,6 +186,7 @@ export default function Home() {
             panelCloseSignal={panelCloseSignal}
             programToZoom={programToZoom}
             onUserLocationChange={setUserLocation}
+            userLocation={userLocation}
           />
           
           {/* SidePanel manages its own state - fixed inside map container */}

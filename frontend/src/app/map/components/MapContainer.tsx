@@ -33,9 +33,10 @@ interface MapContainerProps {
   panelCloseSignal?: number;
   programToZoom?: { lat: number; lng: number } | null;
   onUserLocationChange?: (location: { lat: number; lng: number } | null) => void;
+  userLocation?: { lat: number; lng: number } | null; // From parent (e.g. set on page load)
 }
 
-export default function MapContainer({ programs: externalPrograms, onPinClick, panelCloseSignal, programToZoom, onUserLocationChange }: MapContainerProps = {}) {
+export default function MapContainer({ programs: externalPrograms, onPinClick, panelCloseSignal, programToZoom, onUserLocationChange, userLocation: userLocationProp = null }: MapContainerProps = {}) {
   const mapRef = useRef<MapRef | null>(null);
   const [programs, setPrograms] = useState<Program[]>([]);
   const [selectedRegion, setSelectedRegion] = useState<Region | null>(null);
@@ -46,8 +47,9 @@ export default function MapContainer({ programs: externalPrograms, onPinClick, p
   // SaveCanto brand orange (picked from SaveCanto icon)
   const SAVECANTO_ORANGE = "#F98A1B";
   
-  // Location feature state
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  // Location: use prop from parent (set on page load) or local state (set when user clicks "Your location")
+  const [userLocationLocal, setUserLocationLocal] = useState<{ lat: number; lng: number } | null>(null);
+  const userLocation = userLocationProp ?? userLocationLocal;
   const [isLocating, setIsLocating] = useState(false);
   const LOCATION_BLUE = "#1976D2";
   
@@ -105,7 +107,6 @@ export default function MapContainer({ programs: externalPrograms, onPinClick, p
         });
     }
   }, [externalPrograms]);
-
 
   // Handle cluster click - zoom to region and show pins
   const handleRegionSelect = (cluster: RegionCluster) => {
@@ -278,57 +279,55 @@ export default function MapContainer({ programs: externalPrograms, onPinClick, p
 
   // Handler to locate the user's current position
   const handleLocateMe = useCallback(() => {
-    // Check if geolocation is available
     if (typeof window === 'undefined' || !('geolocation' in navigator)) {
       alert('Geolocation is not supported in your browser.');
       return;
     }
-
-    // Prevent multiple simultaneous requests
+    // Secure context required for geolocation (HTTPS or localhost)
+    if (!window.isSecureContext) {
+      alert('Location only works on secure connections (HTTPS or localhost).');
+      return;
+    }
     if (isLocating) return;
-    
+
     setIsLocating(true);
 
-    // Request location - browser will show permission prompt
+    const options: PositionOptions = {
+      enableHighAccuracy: false,
+      timeout: 20000,
+      maximumAge: 300000, // 5 min cache so cached result can work if recent
+    };
+
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
-        
-        // Store user location
         const location = { lat: latitude, lng: longitude };
-        setUserLocation(location);
-        // Notify parent component
+        setUserLocationLocal(location);
         if (onUserLocationChange) {
           onUserLocationChange(location);
         }
-        
-        // Zoom to user location
         zoomToCoordinates(longitude, latitude, 9);
-        
-        // Create region to show pins around user location
         const boundingBox = calculateRegionBoundingBox(latitude, longitude, 1, 0.5);
         setSelectedRegion({
           id: `user-location-${latitude}-${longitude}`,
           name: 'Your Location',
           boundingBox,
         });
-        
         setIsLocating(false);
       },
       (error: GeolocationPositionError) => {
         setIsLocating(false);
-        
-        // Handle errors silently - browser already shows its own prompt
-        // Only log for debugging
-        console.error('Location error:', error.code, error.message);
+        const messages: Record<number, string> = {
+          1: 'Location was denied. Click the lock or info icon in the address bar → set Location to Allow → reload the page, then try "Your location" again.',
+          2: 'Location couldn’t be determined. Try: (1) Turn on Location Services in system settings (e.g. Mac: System Settings → Privacy & Security → Location Services). (2) In the address bar, click the lock/info icon and set Location to Allow for this site, then try again.',
+          3: 'Location request timed out. Check your internet connection and try again.',
+        };
+        const msg = messages[error.code] || 'Could not get your location. Please try again.';
+        alert(msg);
       },
-      {
-        enableHighAccuracy: false, // Use less accurate but faster method
-        timeout: 10000,
-        maximumAge: 60000, // Accept cached location up to 1 minute old
-      }
+      options
     );
-  }, [zoomToCoordinates, isLocating]);
+  }, [zoomToCoordinates, isLocating, onUserLocationChange]);
 
   return (
     <BaseMap mapRef={mapRef} onMoveEnd={handleMoveEnd}>
