@@ -122,7 +122,7 @@ export default function Home() {
               </svg>
             </button>
             <div className="flex items-center gap-2 mb-4">
-              <span className="text-xl font-semibold" style={{ color: '#F98A1B' }}>Save Cantonese</span>
+              <span className="text-xl font-semibold text-black">Save Cantonese</span>
             </div>
             <p className="text-gray-600 text-sm mb-1">SaveCanto Map would like to</p>
             <div className="flex items-center gap-3 mb-6">
@@ -147,7 +147,7 @@ export default function Home() {
                 type="button"
                 onClick={handleLocationAllow}
                 className="px-4 py-2 rounded-lg font-medium text-white hover:opacity-90"
-                style={{ backgroundColor: '#F98A1B' }}
+                style={{ backgroundColor: '#1976D2' }}
               >
                 Allow
               </button>
